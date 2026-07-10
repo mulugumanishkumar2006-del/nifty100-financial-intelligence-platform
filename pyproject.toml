@@ -1,0 +1,5 @@
+[project]
+name = "nifty100-financial-intelligence"
+version = "0.1.0"
+description = "Financial Intelligence Platform"
+requires-python = ">=3.11"
