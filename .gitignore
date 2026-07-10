@@ -1,0 +1,117 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# =========================
+# Virtual Environment
+# =========================
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# IDEs
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Operating System
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# Database
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================
+# Build & Distribution
+# =========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# =========================
+# Test & Coverage
+# =========================
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# =========================
+# Generated Reports
+# =========================
+reports/generated/
+reports/output/
+output/
+exports/
+
+# =========================
+# Streamlit Cache
+# =========================
+.streamlit/secrets.toml
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.bak
+*.cache
+
+# =========================
+# Data Files (Optional)
+# Uncomment if datasets should NOT be committed
+# =========================
+# data/raw/
+# data/processed/
+# data/supporting/
+
+# Keep folder structure
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/supporting/.gitkeep
+
+# =========================
+# Generated Charts
+# =========================
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.pdf
+
+# Keep documentation assets if needed
+!docs/assets/
