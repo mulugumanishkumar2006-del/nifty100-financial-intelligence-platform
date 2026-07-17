@@ -1074,6 +1074,453 @@ print("Executive Financial KPI Dashboard")
 print("======================================================")
 print(df)
 # ==========================================================
+# Query 71 - Investment Opportunity Scorecard
+# ==========================================================
+
+query = """
+WITH latest_profit AS (
+    SELECT
+        company_id,
+        sales,
+        net_profit,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM profitandloss
+),
+
+latest_ratios AS (
+    SELECT
+        company_id,
+        return_on_equity_pct,
+        debt_to_equity,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM financial_ratios
+),
+
+latest_cashflow AS (
+    SELECT
+        company_id,
+        net_cash_flow,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM cashflow
+)
+
+SELECT
+    c.company_name,
+
+    ROUND(lp.sales,2) AS revenue,
+
+    ROUND(lp.net_profit,2) AS net_profit,
+
+    ROUND(lr.return_on_equity_pct,2) AS roe,
+
+    ROUND(lr.debt_to_equity,2) AS debt_to_equity,
+
+    ROUND(lc.net_cash_flow,2) AS net_cash_flow,
+
+    (
+        CASE WHEN lp.net_profit > 0 THEN 1 ELSE 0 END +
+        CASE WHEN lr.return_on_equity_pct > 15 THEN 1 ELSE 0 END +
+        CASE WHEN lr.debt_to_equity < 1 THEN 1 ELSE 0 END +
+        CASE WHEN lc.net_cash_flow > 0 THEN 1 ELSE 0 END
+    ) AS investment_score
+
+FROM companies c
+
+LEFT JOIN latest_profit lp
+ON c.id = lp.company_id
+AND lp.rn = 1
+
+LEFT JOIN latest_ratios lr
+ON c.id = lr.company_id
+AND lr.rn = 1
+
+LEFT JOIN latest_cashflow lc
+ON c.id = lc.company_id
+AND lc.rn = 1
+
+ORDER BY
+    investment_score DESC,
+    roe DESC,
+    revenue DESC;
+"""
+
+df = pd.read_sql_query(query, connection)
+
+print("\n====================================================")
+print("Query 71 - Investment Opportunity Scorecard")
+print("====================================================")
+print(df)
+# ==========================================================
+# Query 72 - Multi-Factor Company Ranking
+# ==========================================================
+
+query = """
+WITH latest_profit AS (
+    SELECT
+        company_id,
+        sales,
+        net_profit,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM profitandloss
+),
+
+latest_ratios AS (
+    SELECT
+        company_id,
+        return_on_equity_pct,
+        debt_to_equity,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM financial_ratios
+),
+
+latest_cashflow AS (
+    SELECT
+        company_id,
+        net_cash_flow,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM cashflow
+),
+
+company_scores AS (
+    SELECT
+        c.company_name,
+
+        lp.sales,
+
+        lp.net_profit,
+
+        lr.return_on_equity_pct,
+
+        lr.debt_to_equity,
+
+        lc.net_cash_flow,
+
+        (
+            CASE WHEN lp.net_profit > 0 THEN 1 ELSE 0 END +
+            CASE WHEN lr.return_on_equity_pct > 15 THEN 1 ELSE 0 END +
+            CASE WHEN lr.debt_to_equity < 1 THEN 1 ELSE 0 END +
+            CASE WHEN lc.net_cash_flow > 0 THEN 1 ELSE 0 END
+        ) AS investment_score
+
+    FROM companies c
+
+    LEFT JOIN latest_profit lp
+    ON c.id = lp.company_id
+    AND lp.rn = 1
+
+    LEFT JOIN latest_ratios lr
+    ON c.id = lr.company_id
+    AND lr.rn = 1
+
+    LEFT JOIN latest_cashflow lc
+    ON c.id = lc.company_id
+    AND lc.rn = 1
+)
+
+SELECT
+
+    RANK() OVER(
+        ORDER BY
+            investment_score DESC,
+            return_on_equity_pct DESC,
+            net_profit DESC,
+            debt_to_equity ASC
+    ) AS company_rank,
+
+    company_name,
+
+    ROUND(sales,2) AS revenue,
+
+    ROUND(net_profit,2) AS net_profit,
+
+    ROUND(return_on_equity_pct,2) AS roe,
+
+    ROUND(debt_to_equity,2) AS debt_to_equity,
+
+    investment_score
+
+FROM company_scores
+
+ORDER BY company_rank;
+"""
+
+df = pd.read_sql_query(query, connection)
+
+print("\n====================================================")
+print("Query 72 - Multi-Factor Company Ranking")
+print("====================================================")
+print(df)
+# ==========================================================
+# Query 73 - Sector Leadership Analysis
+# ==========================================================
+
+query = """
+WITH latest_profit AS (
+    SELECT
+        company_id,
+        sales,
+        net_profit,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM profitandloss
+),
+
+latest_ratios AS (
+    SELECT
+        company_id,
+        return_on_equity_pct,
+        debt_to_equity,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM financial_ratios
+),
+
+latest_cashflow AS (
+    SELECT
+        company_id,
+        net_cash_flow,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM cashflow
+),
+
+company_scores AS (
+    SELECT
+        s.broad_sector,
+        c.company_name,
+        lp.sales,
+        lp.net_profit,
+        lr.return_on_equity_pct,
+        lr.debt_to_equity,
+        lc.net_cash_flow,
+
+        (
+            CASE WHEN lp.net_profit > 0 THEN 1 ELSE 0 END +
+            CASE WHEN lr.return_on_equity_pct > 15 THEN 1 ELSE 0 END +
+            CASE WHEN lr.debt_to_equity < 1 THEN 1 ELSE 0 END +
+            CASE WHEN lc.net_cash_flow > 0 THEN 1 ELSE 0 END
+        ) AS investment_score
+
+    FROM companies c
+
+    JOIN sectors s
+    ON c.id = s.company_id
+
+    LEFT JOIN latest_profit lp
+    ON c.id = lp.company_id
+    AND lp.rn = 1
+
+    LEFT JOIN latest_ratios lr
+    ON c.id = lr.company_id
+    AND lr.rn = 1
+
+    LEFT JOIN latest_cashflow lc
+    ON c.id = lc.company_id
+    AND lc.rn = 1
+)
+
+SELECT
+    broad_sector,
+    company_name,
+
+    ROUND(sales,2) AS revenue,
+
+    ROUND(net_profit,2) AS net_profit,
+
+    ROUND(return_on_equity_pct,2) AS roe,
+
+    ROUND(debt_to_equity,2) AS debt_to_equity,
+
+    investment_score
+
+FROM (
+    SELECT
+        *,
+
+        ROW_NUMBER() OVER (
+            PARTITION BY broad_sector
+            ORDER BY
+                investment_score DESC,
+                return_on_equity_pct DESC,
+                sales DESC
+        ) AS sector_rank
+
+    FROM company_scores
+)
+
+WHERE sector_rank = 1
+
+ORDER BY broad_sector;
+"""
+
+df = pd.read_sql_query(query, connection)
+
+print("\n====================================================")
+print("Query 73 - Sector Leadership Analysis")
+print("====================================================")
+print(df)
+# ==========================================================
+# Query 74 - High Growth, Low Risk Companies
+# ==========================================================
+
+query = """
+WITH latest_profit AS (
+    SELECT
+        company_id,
+        sales,
+        net_profit,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM profitandloss
+),
+
+latest_ratios AS (
+    SELECT
+        company_id,
+        return_on_equity_pct,
+        debt_to_equity,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM financial_ratios
+),
+
+latest_cashflow AS (
+    SELECT
+        company_id,
+        net_cash_flow,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM cashflow
+)
+
+SELECT
+    c.company_name,
+
+    ROUND(lp.sales, 2) AS revenue,
+
+    ROUND(lp.net_profit, 2) AS net_profit,
+
+    ROUND(lr.return_on_equity_pct, 2) AS roe,
+
+    ROUND(lr.debt_to_equity, 2) AS debt_to_equity,
+
+    ROUND(lc.net_cash_flow, 2) AS net_cash_flow
+
+FROM companies c
+
+LEFT JOIN latest_profit lp
+ON c.id = lp.company_id
+AND lp.rn = 1
+
+LEFT JOIN latest_ratios lr
+ON c.id = lr.company_id
+AND lr.rn = 1
+
+LEFT JOIN latest_cashflow lc
+ON c.id = lc.company_id
+AND lc.rn = 1
+
+WHERE
+    lp.net_profit > 0
+    AND lr.return_on_equity_pct > 15
+    AND lr.debt_to_equity < 1
+    AND lc.net_cash_flow > 0
+
+ORDER BY
+    lr.return_on_equity_pct DESC,
+    lp.net_profit DESC;
+"""
+
+df = pd.read_sql_query(query, connection)
+
+print("\n====================================================")
+print("Query 74 - High Growth, Low Risk Companies")
+print("====================================================")
+print(df)
+# ==========================================================
+# Query 75 - Top Value Companies
+# ==========================================================
+
+query = """
+WITH latest_ratios AS (
+    SELECT
+        company_id,
+        year,
+        return_on_equity_pct,
+        earnings_per_share,
+        ROW_NUMBER() OVER (
+            PARTITION BY company_id
+            ORDER BY year DESC
+        ) AS rn
+    FROM financial_ratios
+)
+
+SELECT
+    c.company_name,
+
+    lr.year,
+
+    ROUND(lr.return_on_equity_pct, 2) AS roe,
+
+    ROUND(lr.earnings_per_share, 2) AS eps,
+
+    RANK() OVER (
+        ORDER BY
+            lr.return_on_equity_pct DESC,
+            lr.earnings_per_share DESC
+    ) AS value_rank
+
+FROM latest_ratios lr
+
+JOIN companies c
+ON c.id = lr.company_id
+
+WHERE
+    lr.rn = 1
+    AND lr.return_on_equity_pct IS NOT NULL
+    AND lr.earnings_per_share IS NOT NULL
+
+ORDER BY
+    value_rank;
+"""
+
+df = pd.read_sql_query(query, connection)
+
+print("\n====================================================")
+print("Query 75 - Top Value Companies")
+print("====================================================")
+print(df)
+# ==========================================================
 # Close Connection
 # ==========================================================
 
