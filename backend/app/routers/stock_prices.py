@@ -17,7 +17,10 @@ from app.services.stock_price_service import (
 
 )
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/stock-prices",
+    tags=["Stock Prices"]
+)
 
 
 # ==========================================================

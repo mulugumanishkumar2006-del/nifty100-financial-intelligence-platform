@@ -7,6 +7,7 @@ NIFTY100 Financial Intelligence Platform
 import sqlite3
 from pathlib import Path
 import pandas as pd
+from app.utils import dataframe_to_records
 
 
 # ==========================================================
@@ -47,7 +48,7 @@ def get_all_sectors():
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -92,7 +93,7 @@ def companies_in_sector(sector_name):
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -123,7 +124,7 @@ def sector_summary():
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================

@@ -10,7 +10,10 @@ from app.services.sector_service import (
     total_sectors
 )
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/sectors",
+    tags=["Sectors"]
+)
 
 
 # ==========================================================

@@ -8,6 +8,7 @@ import sqlite3
 from pathlib import Path
 
 import pandas as pd
+from app.utils import dataframe_to_records
 
 
 # ==========================================================
@@ -91,7 +92,7 @@ def top_revenue(limit=10):
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -126,7 +127,7 @@ def top_profit(limit=10):
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -157,7 +158,7 @@ def sector_distribution():
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================

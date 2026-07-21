@@ -8,6 +8,7 @@ import sqlite3
 from pathlib import Path
 
 import pandas as pd
+from app.utils import dataframe_to_records
 
 
 # ==========================================================
@@ -44,7 +45,7 @@ def get_latest_ratios():
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -77,7 +78,7 @@ def get_company_ratios(company_id: int):
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -135,7 +136,7 @@ def top_roe(limit: int = 10):
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -170,4 +171,4 @@ def top_asset_turnover(limit: int = 10):
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)

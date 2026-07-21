@@ -8,6 +8,7 @@ import sqlite3
 from pathlib import Path
 
 import pandas as pd
+from app.utils import dataframe_to_records
 
 
 # ==========================================================
@@ -40,7 +41,8 @@ def get_all_companies():
     SELECT
         id,
         company_name,
-        ticker
+        website,
+        about_company
     FROM companies
     ORDER BY company_name;
     """
@@ -49,7 +51,7 @@ def get_all_companies():
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -82,7 +84,8 @@ def get_company(company_id: int):
 
         return None
 
-    return dataframe.to_dict(orient="records")[0]
+    records = dataframe_to_records(dataframe)
+    return records[0] if records else None
 
 
 # ==========================================================
@@ -97,7 +100,8 @@ def search_company(keyword: str):
     SELECT
         id,
         company_name,
-        ticker
+        website,
+        about_company
     FROM companies
     WHERE company_name LIKE ?
     ORDER BY company_name;
@@ -115,7 +119,7 @@ def search_company(keyword: str):
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -151,7 +155,7 @@ def company_statistics():
 
         COUNT(*) AS total_companies,
 
-        COUNT(DISTINCT ticker) AS total_tickers
+        COUNT(DISTINCT website) AS companies_with_website
 
     FROM companies;
     """
@@ -160,4 +164,6 @@ def company_statistics():
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")[0]
+    records = dataframe_to_records(dataframe)
+    return records[0] if records else {}
+    return records[0] if records else {}

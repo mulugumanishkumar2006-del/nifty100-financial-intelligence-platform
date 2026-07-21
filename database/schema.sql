@@ -20,6 +20,9 @@ DROP TABLE IF EXISTS financial_ratios;
 CREATE TABLE companies (
     id TEXT PRIMARY KEY,
     company_name TEXT NOT NULL,
+    ticker TEXT,
+    isin TEXT,
+    market_cap REAL,
     company_logo TEXT,
     chart_link TEXT,
     about_company TEXT,

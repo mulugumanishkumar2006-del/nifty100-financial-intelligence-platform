@@ -15,7 +15,10 @@ from app.services.ratio_service import (
     top_asset_turnover
 )
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/financial-ratios",
+    tags=["Financial Ratios"]
+)
 
 
 # ==========================================================

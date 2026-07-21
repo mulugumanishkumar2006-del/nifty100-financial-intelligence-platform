@@ -7,6 +7,7 @@ NIFTY100 Financial Intelligence Platform
 import sqlite3
 from pathlib import Path
 import pandas as pd
+from app.utils import dataframe_to_records
 
 
 # ==========================================================
@@ -55,7 +56,7 @@ def latest_prices(limit: int = 100):
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -90,7 +91,7 @@ def company_price_history(company_id: int):
 
     connection.close()
 
-    return dataframe.to_dict(orient="records")
+    return dataframe_to_records(dataframe)
 
 
 # ==========================================================
@@ -131,7 +132,8 @@ def latest_price(company_id: int):
 
         return {}
 
-    return dataframe.to_dict(orient="records")[0]
+    records = dataframe_to_records(dataframe)
+    return records[0] if records else {}
 
 
 # ==========================================================

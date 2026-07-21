@@ -1,28 +1,27 @@
-from sqlalchemy import text
+from sqlalchemy.orm import Session
 from app.database import SessionLocal
+from app.models import Company
 
 
 def get_all_companies():
-    db = SessionLocal()
+
+    db: Session = SessionLocal()
 
     try:
+        companies = db.query(Company).all()
 
-        query = text("""
-            SELECT *
-            FROM companies
-            LIMIT 100
-        """)
+        result = []
 
-        result = db.execute(query)
+        for company in companies:
 
-        rows = result.fetchall()
+            result.append({
+                "id": company.id,
+                "company_name": company.company_name,
+                "symbol": company.symbol,
+                "sector": company.sector
+            })
 
-        columns = result.keys()
-
-        return [
-            dict(zip(columns, row))
-            for row in rows
-        ]
+        return result
 
     finally:
         db.close()
@@ -30,27 +29,28 @@ def get_all_companies():
 
 def get_company(company_id: int):
 
-    db = SessionLocal()
+    db: Session = SessionLocal()
 
     try:
 
-        query = text("""
-            SELECT *
-            FROM companies
-            WHERE id=:id
-        """)
+        company = db.query(Company).filter(
+            Company.id == company_id
+        ).first()
 
-        result = db.execute(
-            query,
-            {"id": company_id}
-        )
+        if company is None:
 
-        row = result.fetchone()
+            return {
+                "message": "Company not found"
+            }
 
-        if row is None:
-            return {}
-
-        return dict(zip(result.keys(), row))
+        return {
+            "id": company.id,
+            "company_name": company.company_name,
+            "symbol": company.symbol,
+            "sector": company.sector,
+            "website": company.website,
+            "about_company": company.about_company
+        }
 
     finally:
         db.close()

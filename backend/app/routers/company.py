@@ -1,5 +1,8 @@
 from fastapi import APIRouter
-from app.services.company_service import *
+from app.services.company_service import (
+    get_all_companies,
+    get_company
+)
 
 router = APIRouter(
     prefix="/companies",
