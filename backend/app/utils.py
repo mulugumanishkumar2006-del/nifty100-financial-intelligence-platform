@@ -7,6 +7,7 @@ NIFTY100 Financial Intelligence Platform
 import json
 import math
 import pandas as pd
+import numpy as np
 from typing import Any
 
 
@@ -15,9 +16,18 @@ from typing import Any
 # ==========================================================
 
 class CustomJSONEncoder(json.JSONEncoder):
-    """Custom JSON encoder that handles NaN and Infinity values"""
+    """Custom JSON encoder that handles NumPy scalars, NaN and Infinity values"""
     
     def default(self, o):
+        if isinstance(o, (np.integer,)):
+            return int(o)
+        if isinstance(o, (np.floating,)):
+            value = float(o)
+            if math.isnan(value) or math.isinf(value):
+                return None
+            return value
+        if isinstance(o, (np.bool_,)):
+            return bool(o)
         if isinstance(o, float):
             if math.isnan(o) or math.isinf(o):
                 return None
@@ -37,6 +47,16 @@ def clean_value(value: Any) -> Any:
     elif isinstance(value, float):
         if math.isnan(value) or math.isinf(value):
             return None
+    elif isinstance(value, np.generic):
+        if isinstance(value, np.integer):
+            return int(value)
+        if isinstance(value, np.floating):
+            value = float(value)
+            if math.isnan(value) or math.isinf(value):
+                return None
+            return value
+        if isinstance(value, np.bool_):
+            return bool(value)
     return value
 
 

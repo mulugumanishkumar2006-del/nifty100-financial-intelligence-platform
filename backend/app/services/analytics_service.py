@@ -35,25 +35,33 @@ def dashboard_summary():
 
     summary = {}
 
-    summary["companies"] = pd.read_sql_query(
-        "SELECT COUNT(*) total FROM companies",
-        connection
-    ).iloc[0]["total"]
+    summary["companies"] = int(
+        pd.read_sql_query(
+            "SELECT COUNT(*) total FROM companies",
+            connection
+        ).iloc[0]["total"]
+    )
 
-    summary["financial_ratios"] = pd.read_sql_query(
-        "SELECT COUNT(*) total FROM financial_ratios",
-        connection
-    ).iloc[0]["total"]
+    summary["financial_ratios"] = int(
+        pd.read_sql_query(
+            "SELECT COUNT(*) total FROM financial_ratios",
+            connection
+        ).iloc[0]["total"]
+    )
 
-    summary["stock_prices"] = pd.read_sql_query(
-        "SELECT COUNT(*) total FROM stock_prices",
-        connection
-    ).iloc[0]["total"]
+    summary["stock_prices"] = int(
+        pd.read_sql_query(
+            "SELECT COUNT(*) total FROM stock_prices",
+            connection
+        ).iloc[0]["total"]
+    )
 
-    summary["sectors"] = pd.read_sql_query(
-        "SELECT COUNT(DISTINCT broad_sector) total FROM sectors",
-        connection
-    ).iloc[0]["total"]
+    summary["sectors"] = int(
+        pd.read_sql_query(
+            "SELECT COUNT(DISTINCT broad_sector) total FROM sectors",
+            connection
+        ).iloc[0]["total"]
+    )
 
     connection.close()
 

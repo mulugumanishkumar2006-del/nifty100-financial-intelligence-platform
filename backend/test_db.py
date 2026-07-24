@@ -1,11 +1,20 @@
-from app.database import SessionLocal
-from sqlalchemy import text
+from pathlib import Path
+import sqlite3
 
-db = SessionLocal()
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-try:
-    result = db.execute(text("SELECT COUNT(*) FROM companies"))
-    print("Total Companies:", result.scalar())
+DATABASE = PROJECT_ROOT / "database" / "nifty100.db"
 
-finally:
-    db.close()
+print("Database path:", DATABASE)
+print("Exists:", DATABASE.exists())
+
+conn = sqlite3.connect(DATABASE)
+
+cursor = conn.execute("PRAGMA table_info(companies);")
+
+print("\nCompanies Table:\n")
+
+for row in cursor:
+    print(row)
+
+conn.close()

@@ -10,6 +10,8 @@ from pathlib import Path
 import pandas as pd
 from app.utils import dataframe_to_records
 
+print("✅ company_service.py LOADED")
+print(__file__)
 
 # ==========================================================
 # Database Path
@@ -19,13 +21,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 DATABASE = PROJECT_ROOT / "database" / "nifty100.db"
 
+print("Database :", DATABASE)
+
 
 # ==========================================================
 # Database Connection
 # ==========================================================
 
 def get_connection():
-
     return sqlite3.connect(DATABASE)
 
 
@@ -35,6 +38,8 @@ def get_connection():
 
 def get_all_companies():
 
+    print("✅ get_all_companies() CALLED")
+
     connection = get_connection()
 
     query = """
@@ -42,10 +47,16 @@ def get_all_companies():
         id,
         company_name,
         website,
-        about_company
+        about_company,
+        face_value,
+        book_value,
+        roce_percentage,
+        roe_percentage
     FROM companies
     ORDER BY company_name;
     """
+
+    print(query)
 
     dataframe = pd.read_sql_query(query, connection)
 
@@ -55,37 +66,39 @@ def get_all_companies():
 
 
 # ==========================================================
-# Get Company By ID
+# Get Company
 # ==========================================================
 
-def get_company(company_id: int):
+def get_company(company_id: str):
 
     connection = get_connection()
 
     query = """
-    SELECT *
+    SELECT
+        id,
+        company_name,
+        website,
+        about_company,
+        face_value,
+        book_value,
+        roce_percentage,
+        roe_percentage
     FROM companies
     WHERE id = ?;
     """
 
     dataframe = pd.read_sql_query(
-
         query,
-
         connection,
-
         params=(company_id,)
-
     )
 
     connection.close()
 
     if dataframe.empty:
-
         return None
 
-    records = dataframe_to_records(dataframe)
-    return records[0] if records else None
+    return dataframe_to_records(dataframe)[0]
 
 
 # ==========================================================
@@ -101,20 +114,20 @@ def search_company(keyword: str):
         id,
         company_name,
         website,
-        about_company
+        about_company,
+        face_value,
+        book_value,
+        roce_percentage,
+        roe_percentage
     FROM companies
     WHERE company_name LIKE ?
     ORDER BY company_name;
     """
 
     dataframe = pd.read_sql_query(
-
         query,
-
         connection,
-
         params=(f"%{keyword}%",)
-
     )
 
     connection.close()
@@ -130,12 +143,10 @@ def total_companies():
 
     connection = get_connection()
 
-    query = """
-    SELECT COUNT(*) AS total
-    FROM companies;
-    """
-
-    dataframe = pd.read_sql_query(query, connection)
+    dataframe = pd.read_sql_query(
+        "SELECT COUNT(*) AS total FROM companies;",
+        connection
+    )
 
     connection.close()
 
@@ -150,20 +161,18 @@ def company_statistics():
 
     connection = get_connection()
 
-    query = """
-    SELECT
-
-        COUNT(*) AS total_companies,
-
-        COUNT(DISTINCT website) AS companies_with_website
-
-    FROM companies;
-    """
-
-    dataframe = pd.read_sql_query(query, connection)
+    dataframe = pd.read_sql_query(
+        """
+        SELECT
+            COUNT(*) AS total_companies,
+            COUNT(DISTINCT website) AS companies_with_website
+        FROM companies;
+        """,
+        connection,
+    )
 
     connection.close()
 
     records = dataframe_to_records(dataframe)
-    return records[0] if records else {}
+
     return records[0] if records else {}

@@ -1,56 +1,169 @@
-from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from app.models import Company
+"""
+Company Service
 
+NIFTY100 Financial Intelligence Platform
+"""
+
+import sqlite3
+from pathlib import Path
+
+import pandas as pd
+from app.utils import dataframe_to_records
+
+# ==========================================================
+# Database Path
+# ==========================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+DATABASE = PROJECT_ROOT / "database" / "nifty100.db"
+
+
+# ==========================================================
+# Database Connection
+# ==========================================================
+
+def get_connection():
+    return sqlite3.connect(DATABASE)
+
+
+# ==========================================================
+# Get All Companies
+# ==========================================================
 
 def get_all_companies():
 
-    db: Session = SessionLocal()
+    connection = get_connection()
 
-    try:
-        companies = db.query(Company).all()
+    query = """
+    SELECT
+        id,
+        company_name,
+        website,
+        about_company,
+        face_value,
+        book_value,
+        roce_percentage,
+        roe_percentage
+    FROM companies
+    ORDER BY company_name;
+    """
 
-        result = []
+    dataframe = pd.read_sql_query(query, connection)
 
-        for company in companies:
+    connection.close()
 
-            result.append({
-                "id": company.id,
-                "company_name": company.company_name,
-                "symbol": company.symbol,
-                "sector": company.sector
-            })
-
-        return result
-
-    finally:
-        db.close()
+    return dataframe_to_records(dataframe)
 
 
-def get_company(company_id: int):
+# ==========================================================
+# Get Company
+# ==========================================================
 
-    db: Session = SessionLocal()
+def get_company(company_id: str):
 
-    try:
+    connection = get_connection()
 
-        company = db.query(Company).filter(
-            Company.id == company_id
-        ).first()
+    query = """
+    SELECT
+        id,
+        company_name,
+        website,
+        about_company,
+        face_value,
+        book_value,
+        roce_percentage,
+        roe_percentage
+    FROM companies
+    WHERE id = ?;
+    """
 
-        if company is None:
+    dataframe = pd.read_sql_query(
+        query,
+        connection,
+        params=(company_id,)
+    )
 
-            return {
-                "message": "Company not found"
-            }
+    connection.close()
 
-        return {
-            "id": company.id,
-            "company_name": company.company_name,
-            "symbol": company.symbol,
-            "sector": company.sector,
-            "website": company.website,
-            "about_company": company.about_company
-        }
+    if dataframe.empty:
+        return None
 
-    finally:
-        db.close()
+    return dataframe_to_records(dataframe)[0]
+
+
+# ==========================================================
+# Search Company
+# ==========================================================
+
+def search_company(keyword: str):
+
+    connection = get_connection()
+
+    query = """
+    SELECT
+        id,
+        company_name,
+        website,
+        about_company,
+        face_value,
+        book_value,
+        roce_percentage,
+        roe_percentage
+    FROM companies
+    WHERE company_name LIKE ?
+    ORDER BY company_name;
+    """
+
+    dataframe = pd.read_sql_query(
+        query,
+        connection,
+        params=(f"%{keyword}%",)
+    )
+
+    connection.close()
+
+    return dataframe_to_records(dataframe)
+
+
+# ==========================================================
+# Company Count
+# ==========================================================
+
+def total_companies():
+
+    connection = get_connection()
+
+    dataframe = pd.read_sql_query(
+        "SELECT COUNT(*) AS total FROM companies;",
+        connection
+    )
+
+    connection.close()
+
+    return int(dataframe.iloc[0]["total"])
+
+
+# ==========================================================
+# Company Statistics
+# ==========================================================
+
+def company_statistics():
+
+    connection = get_connection()
+
+    dataframe = pd.read_sql_query(
+        """
+        SELECT
+            COUNT(*) AS total_companies,
+            COUNT(DISTINCT website) AS companies_with_website
+        FROM companies;
+        """,
+        connection
+    )
+
+    connection.close()
+
+    records = dataframe_to_records(dataframe)
+
+    return records[0]
