@@ -1,3 +1,9 @@
+"""
+Company Router
+
+NIFTY100 Financial Intelligence Platform
+"""
+
 from fastapi import APIRouter, HTTPException
 
 from app.schemas import CompanyResponse
@@ -5,7 +11,9 @@ from app.schemas import CompanyResponse
 from app.services.company_service import (
     get_all_companies,
     get_company,
+    get_company_financials,
 )
+
 
 router = APIRouter()
 
@@ -20,7 +28,9 @@ router = APIRouter()
     summary="Fetch All Companies"
 )
 def fetch_all_companies():
+
     return get_all_companies()
+
 
 
 # ==========================================================
@@ -29,17 +39,19 @@ def fetch_all_companies():
 
 @router.get(
     "/companies/{company_id}",
-    response_model=CompanyResponse,
-    summary="Fetch Company By ID"
+    summary="Fetch Complete Company Details"
 )
 def fetch_company(company_id: str):
 
-    company = get_company(company_id)
+    company = get_company_financials(company_id)
+
 
     if company is None:
+
         raise HTTPException(
             status_code=404,
             detail="Company not found"
         )
+
 
     return company

@@ -1,0 +1,31 @@
+.ranking-card {
+  background: white;
+  border-radius: 14px;
+  padding: 25px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.08);
+}
+
+.ranking-card h2 {
+  margin-bottom: 20px;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ranking-table th {
+  background: #2563eb;
+  color: white;
+  padding: 12px;
+  text-align: left;
+}
+
+.ranking-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.ranking-table tr:hover {
+  background: #f5f7ff;
+}

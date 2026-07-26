@@ -2,9 +2,8 @@ import {
   PieChart,
   Pie,
   Cell,
-  Tooltip,
   ResponsiveContainer,
-  Legend,
+  Tooltip,
 } from "recharts";
 
 const COLORS = [
@@ -13,62 +12,38 @@ const COLORS = [
   "#dc2626",
   "#9333ea",
   "#f59e0b",
-  "#06b6d4",
-  "#ec4899",
-  "#84cc16",
-  "#f97316",
   "#14b8a6",
+  "#ec4899",
+  "#8b5cf6",
+  "#22c55e",
+  "#0ea5e9",
 ];
 
 function SectorPieChart({ sectorData }) {
-  if (!sectorData || sectorData.length === 0) {
-    return (
-      <div className="card">
-        <h2>Sector Distribution</h2>
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  // Transform API response
-  const data = sectorData.map((item) => ({
-    name: item.broad_sector,
-    value: item.companies,
-  }));
-
   return (
-    <div
-      style={{
-        background: "#ffffff",
-        padding: "20px",
-        borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-      }}
-    >
+    <div className="card">
       <h2>Sector Distribution</h2>
 
-      <ResponsiveContainer width="100%" height={420}>
+      <ResponsiveContainer width="100%" height={350}>
         <PieChart>
           <Pie
-            data={data}
-            dataKey="value"
-            nameKey="name"
-            outerRadius={140}
-            label={({ name, percent }) =>
-              `${name} ${(percent * 100).toFixed(0)}%`
-            }
+            data={sectorData}
+            dataKey="companies"
+            nameKey="broad_sector"
+            outerRadius={120}
+            label
           >
-            {data.map((entry, index) => (
+            {sectorData.map((entry, index) => (
               <Cell
                 key={index}
-                fill={COLORS[index % COLORS.length]}
+                fill={
+                  COLORS[index % COLORS.length]
+                }
               />
             ))}
           </Pie>
 
           <Tooltip />
-
-          <Legend />
         </PieChart>
       </ResponsiveContainer>
     </div>

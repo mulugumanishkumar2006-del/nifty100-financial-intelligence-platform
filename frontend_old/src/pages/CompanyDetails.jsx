@@ -1,150 +1,184 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+
 import Layout from "../components/Layout";
 
-function CompanyDetails() {
-  const { id } = useParams();
+import CompanyHeader from "../components/company/CompanyHeader";
+import CompanySummary from "../components/company/CompanySummary";
 
-  return (
-    <Layout>
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "30px",
-          borderRadius: "15px",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h1
-          style={{
-            color: "#2563eb",
-            marginBottom: "10px",
-          }}
-        >
-          🏢 Company Details
-        </h1>
+import ProfitLossTable from "../components/company/ProfitLossTable";
+import BalanceSheetTable from "../components/company/BalanceSheetTable";
+import CashFlowTable from "../components/company/CashFlowTable";
+import FinancialRatios from "../components/company/FinancialRatios";
 
-        <p
-          style={{
-            color: "#6b7280",
-            marginBottom: "30px",
-          }}
-        >
-          Detailed financial information for the selected company.
-        </p>
+import RevenueChart from "../components/company/RevenueChart";
+import ProfitChart from "../components/company/ProfitChart";
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-            gap: "20px",
-          }}
-        >
-          <div
-            style={{
-              background: "#f9fafb",
-              padding: "20px",
-              borderRadius: "10px",
-            }}
-          >
-            <h3>Company ID</h3>
-            <p
-              style={{
-                fontSize: "22px",
-                fontWeight: "bold",
-                color: "#2563eb",
-              }}
-            >
-              {id}
-            </p>
-          </div>
+import PeerComparison from "../components/company/PeerComparison";
 
-          <div
-            style={{
-              background: "#f9fafb",
-              padding: "20px",
-              borderRadius: "10px",
-            }}
-          >
-            <h3>Company Name</h3>
-            <p>Loading...</p>
-          </div>
+import { getCompany } from "../services/companyService";
 
-          <div
-            style={{
-              background: "#f9fafb",
-              padding: "20px",
-              borderRadius: "10px",
-            }}
-          >
-            <h3>Sector</h3>
-            <p>Loading...</p>
-          </div>
 
-          <div
-            style={{
-              background: "#f9fafb",
-              padding: "20px",
-              borderRadius: "10px",
-            }}
-          >
-            <h3>Website</h3>
-            <p>Loading...</p>
-          </div>
-        </div>
+function CompanyDetails(){
 
-        <div
-          style={{
-            marginTop: "40px",
-            background: "#f9fafb",
-            padding: "25px",
-            borderRadius: "10px",
-          }}
-        >
-          <h2>📈 Financial Overview</h2>
+    const {id}=useParams();
 
-          <table
-            style={{
-              width: "100%",
-              marginTop: "20px",
-              borderCollapse: "collapse",
-            }}
-          >
-            <tbody>
-              <tr>
-                <td><strong>Market Cap</strong></td>
-                <td>Loading...</td>
-              </tr>
+    const [company,setCompany]=useState(null);
 
-              <tr>
-                <td><strong>Sales</strong></td>
-                <td>Loading...</td>
-              </tr>
+    const [loading,setLoading]=useState(true);
 
-              <tr>
-                <td><strong>Net Profit</strong></td>
-                <td>Loading...</td>
-              </tr>
 
-              <tr>
-                <td><strong>ROE</strong></td>
-                <td>Loading...</td>
-              </tr>
 
-              <tr>
-                <td><strong>ROCE</strong></td>
-                <td>Loading...</td>
-              </tr>
+    useEffect(()=>{
 
-              <tr>
-                <td><strong>P/E Ratio</strong></td>
-                <td>Loading...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </Layout>
-  );
+
+        async function fetchCompany(){
+
+            try{
+
+                const response = await getCompany(id);
+
+
+                console.log(
+                    "API RESPONSE:",
+                    response
+                );
+
+
+                setCompany(response);
+
+
+            }
+            catch(error){
+
+                console.error(
+                    "API ERROR:",
+                    error
+                );
+
+            }
+            finally{
+
+                setLoading(false);
+
+            }
+
+        }
+
+
+        fetchCompany();
+
+
+    },[id]);
+
+
+
+
+    if(loading){
+
+        return(
+            <Layout>
+
+                <h2>
+                    Loading Company...
+                </h2>
+
+            </Layout>
+        );
+
+    }
+
+
+
+
+    if(!company){
+
+        return(
+
+            <Layout>
+
+                <h2>
+                    Company Not Found
+                </h2>
+
+            </Layout>
+
+        );
+
+    }
+
+
+
+
+
+    return(
+
+        <Layout>
+
+
+            <CompanyHeader
+                company={company.company}
+            />
+
+
+
+            <CompanySummary
+                company={company.company}
+            />
+
+
+
+            <RevenueChart
+                company={company}
+            />
+
+
+
+            <ProfitChart
+                company={company}
+            />
+
+
+
+
+            <ProfitLossTable
+                data={company.profit_loss}
+            />
+
+
+
+
+            <BalanceSheetTable
+                data={company.balance_sheet}
+            />
+
+
+
+
+            <CashFlowTable
+                data={company.cash_flow}
+            />
+
+
+
+
+            <FinancialRatios
+                company={company.company}
+            />
+
+
+
+
+            <PeerComparison
+                company={company.company}
+            />
+
+
+        </Layout>
+
+    );
+
 }
+
 
 export default CompanyDetails;

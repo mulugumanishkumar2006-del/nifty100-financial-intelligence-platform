@@ -11,11 +11,12 @@ from app.services.analytics_service import (
     top_revenue,
     top_profit,
     sector_distribution,
-    latest_financial_year
+    latest_financial_year,
+    revenue_ranking,
+    profit_ranking,
 )
 
 router = APIRouter()
-
 
 # ==========================================================
 # Dashboard Summary
@@ -23,10 +24,9 @@ router = APIRouter()
 
 @router.get(
     "/dashboard",
-    summary="Dashboard Summary"
+    summary="Dashboard Summary",
 )
 def dashboard():
-
     return dashboard_summary()
 
 
@@ -36,10 +36,9 @@ def dashboard():
 
 @router.get(
     "/top-revenue",
-    summary="Top Revenue Companies"
+    summary="Top Revenue Companies",
 )
 def revenue(limit: int = 10):
-
     return top_revenue(limit)
 
 
@@ -49,10 +48,9 @@ def revenue(limit: int = 10):
 
 @router.get(
     "/top-profit",
-    summary="Top Profit Companies"
+    summary="Top Profit Companies",
 )
 def profit(limit: int = 10):
-
     return top_profit(limit)
 
 
@@ -62,10 +60,9 @@ def profit(limit: int = 10):
 
 @router.get(
     "/sector-distribution",
-    summary="Sector Distribution"
+    summary="Sector Distribution",
 )
 def sectors():
-
     return sector_distribution()
 
 
@@ -75,12 +72,66 @@ def sectors():
 
 @router.get(
     "/latest-year",
-    summary="Latest Financial Year"
+    summary="Latest Financial Year",
 )
 def latest_year():
+    return {
+        "latest_year": latest_financial_year()
+    }
+
+
+# ==========================================================
+# Revenue Ranking
+# ==========================================================
+
+@router.get(
+    "/revenue-ranking",
+    summary="Revenue Ranking",
+)
+def revenue_chart(limit: int = 10):
+    return revenue_ranking(limit)
+
+
+# ==========================================================
+# Profit Ranking
+# ==========================================================
+
+@router.get(
+    "/profit-ranking",
+    summary="Profit Ranking",
+)
+def profit_chart(limit: int = 10):
+    return profit_ranking(limit)
+
+
+# ==========================================================
+# Company Analytics
+# ==========================================================
+
+@router.get(
+    "/company/{company_id}",
+    summary="Company Analytics",
+)
+def company_analytics(company_id: str):
 
     return {
 
-        "latest_year": latest_financial_year()
+        "company_id": company_id,
+
+        "revenue": [
+            {"year": "2020", "value": 42000},
+            {"year": "2021", "value": 47000},
+            {"year": "2022", "value": 52000},
+            {"year": "2023", "value": 61000},
+            {"year": "2024", "value": 69000},
+        ],
+
+        "profit": [
+            {"year": "2020", "value": 4500},
+            {"year": "2021", "value": 5100},
+            {"year": "2022", "value": 5800},
+            {"year": "2023", "value": 6900},
+            {"year": "2024", "value": 7700},
+        ],
 
     }

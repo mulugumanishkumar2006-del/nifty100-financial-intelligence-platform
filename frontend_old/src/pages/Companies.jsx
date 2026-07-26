@@ -1,7 +1,29 @@
+import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import CompanyTable from "../components/CompanyTable";
+import { getCompanies } from "../services/companyService";
 
 function Companies() {
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCompanies() {
+      try {
+        const data = await getCompanies();
+        console.log("Companies:", data);
+
+        setCompanies(data);
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCompanies();
+  }, []);
+
   return (
     <Layout>
       <div
@@ -31,7 +53,11 @@ function Companies() {
         </p>
       </div>
 
-      <CompanyTable />
+      {loading ? (
+        <h2>Loading Companies...</h2>
+      ) : (
+        <CompanyTable companies={companies} />
+      )}
     </Layout>
   );
 }
