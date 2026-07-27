@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-
+from app.routers import intelligence
 import json
 import math
 import traceback
@@ -77,7 +77,11 @@ app.include_router(analytics.router, prefix="/api", tags=["Analytics"])
 app.include_router(financial_ratios.router, prefix="/api", tags=["Financial Ratios"])
 app.include_router(sectors.router, prefix="/api", tags=["Sectors"])
 app.include_router(stock_prices.router, prefix="/api", tags=["Stock Prices"])
-
+app.include_router(
+    intelligence.router,
+    prefix="/api",
+    tags=["Intelligence"]
+)
 
 @app.get("/")
 def home():

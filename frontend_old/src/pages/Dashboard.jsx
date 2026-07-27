@@ -1,14 +1,29 @@
 import { useEffect, useState } from "react";
+
 import Layout from "../components/Layout";
 import Header from "../components/Header";
+
 import StatCard from "../components/StatCard";
+
 import DashboardChart from "../components/DashboardChart";
 import SectorPieChart from "../components/SectorPieChart";
+
+
+// ================= DAY 13 COMPONENTS =================
+
+import MarketOverview from "../dashboard/MarketOverview";
+import InvestmentInsights from "../dashboard/InvestmentInsights";
+
+
+// ================= ANALYTICS COMPONENTS =================
 
 import RevenueRanking from "../components/analytics/RevenueRanking";
 import ProfitRanking from "../components/analytics/ProfitRanking";
 import SectorAnalytics from "../components/analytics/SectorAnalytics";
 import AnalyticsOverview from "../components/analytics/AnalyticsOverview";
+
+
+// ================= ICONS =================
 
 import {
   FaBuilding,
@@ -16,6 +31,9 @@ import {
   FaIndustry,
   FaDatabase,
 } from "react-icons/fa";
+
+
+// ================= SERVICES =================
 
 import {
   getDashboard,
@@ -25,12 +43,17 @@ import {
   getSectorDistribution,
 } from "../services/api";
 
+
 import {
   getRevenueRanking,
   getProfitRanking,
 } from "../services/analyticsService";
 
+
+
 function Dashboard() {
+
+
   const [api, setApi] = useState(null);
 
   const [dashboard, setDashboard] = useState(null);
@@ -47,218 +70,578 @@ function Dashboard() {
 
   const [profitRanking, setProfitRanking] = useState([]);
 
+  const [loading, setLoading] = useState(true);
+
+
+
+
+
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/")
-      .then((res) => res.json())
-      .then(setApi);
 
-    getDashboard().then(setDashboard);
 
-    getLatestYear().then(setLatestYear);
+    async function loadDashboard() {
 
-    getTopRevenue().then((data) => {
-      if (data?.length) setTopRevenue(data[0]);
-    });
 
-    getTopProfit().then((data) => {
-      if (data?.length) setTopProfit(data[0]);
-    });
+      try {
 
-    getSectorDistribution().then(setSectorData);
 
-    getRevenueRanking().then(setRevenueRanking);
+        // Backend health check
 
-    getProfitRanking().then(setProfitRanking);
+        const response = await fetch(
+          "http://127.0.0.1:8000/"
+        );
+
+
+        const apiData =
+          await response.json();
+
+
+        setApi(apiData);
+
+
+
+
+        // Dashboard APIs
+
+        const [
+
+          dashboardData,
+
+          yearData,
+
+          revenueData,
+
+          profitData,
+
+          sector
+
+        ] = await Promise.all([
+
+
+          getDashboard(),
+
+          getLatestYear(),
+
+          getTopRevenue(),
+
+          getTopProfit(),
+
+          getSectorDistribution()
+
+
+        ]);
+
+
+
+        setDashboard(
+          dashboardData
+        );
+
+
+        setLatestYear(
+          yearData
+        );
+
+
+        setTopRevenue(
+          revenueData?.[0] || null
+        );
+
+
+        setTopProfit(
+          profitData?.[0] || null
+        );
+
+
+        setSectorData(
+          sector || []
+        );
+
+
+
+
+        // Rankings
+
+        const [
+
+          revenueRank,
+
+          profitRank
+
+        ] = await Promise.all([
+
+
+          getRevenueRanking(),
+
+          getProfitRanking()
+
+
+        ]);
+
+
+
+        setRevenueRanking(
+          revenueRank || []
+        );
+
+
+        setProfitRanking(
+          profitRank || []
+        );
+
+
+
+      }
+
+      catch(error) {
+
+
+        console.error(
+          "Dashboard Loading Error:",
+          error
+        );
+
+
+      }
+
+      finally {
+
+
+        setLoading(false);
+
+
+      }
+
+
+    }
+
+
+
+    loadDashboard();
+
+
   }, []);
 
+
+
+
+
+
+  if(loading) {
+
+
+    return (
+
+      <Layout>
+
+        <Header />
+
+        <h2>
+          Loading Dashboard...
+        </h2>
+
+      </Layout>
+
+    );
+
+
+  }
+
+
+
+
+
+
   return (
+
     <Layout>
+
+
       <Header />
 
-      {/* ================= KPI Cards ================= */}
+
+
+      {/* ================= KPI CARDS ================= */}
+
 
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-          gap: "20px",
-          marginTop: "30px",
+          display:"grid",
+          gridTemplateColumns:
+          "repeat(auto-fit,minmax(260px,1fr))",
+          gap:"20px",
+          marginTop:"30px"
         }}
       >
+
+
         <StatCard
+
           title="Companies"
-          value={dashboard?.companies ?? "..."}
+
+          value={
+            dashboard?.companies ?? 0
+          }
+
           subtitle="Listed Companies"
+
           icon={<FaBuilding />}
+
           color="#2563eb"
+
         />
 
+
+
         <StatCard
+
           title="Average ROE"
+
           value={
             dashboard
-              ? `${dashboard.average_roe}%`
-              : "..."
+            ?
+            `${dashboard.average_roe}%`
+            :
+            "0%"
           }
+
           subtitle="Return on Equity"
+
           icon={<FaChartBar />}
+
           color="#16a34a"
+
         />
 
+
+
         <StatCard
+
           title="Average ROCE"
+
           value={
             dashboard
-              ? `${dashboard.average_roce}%`
-              : "..."
+            ?
+            `${dashboard.average_roce}%`
+            :
+            "0%"
           }
+
           subtitle="Capital Efficiency"
+
           icon={<FaDatabase />}
+
           color="#dc2626"
+
         />
+
+
 
         <StatCard
+
           title="Sectors"
-          value={dashboard?.total_sectors ?? "..."}
+
+          value={
+            dashboard?.total_sectors ?? 0
+          }
+
           subtitle="Market Sectors"
+
           icon={<FaIndustry />}
+
           color="#9333ea"
+
         />
+
+
       </div>
 
-      {/* ================= Information Cards ================= */}
+
+
+
+
+
+      {/* ================= DAY 13 FEATURES ================= */}
+
+
+      <MarketOverview
+
+        dashboard={dashboard}
+
+      />
+
+
+      <InvestmentInsights
+
+        dashboard={dashboard}
+
+      />
+
+
+
+
+
+
+
+      {/* ================= SUMMARY CARDS ================= */}
+
+
 
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))",
-          gap: "20px",
-          marginTop: "35px",
+          display:"grid",
+          gridTemplateColumns:
+          "repeat(auto-fit,minmax(300px,1fr))",
+          gap:"20px",
+          marginTop:"35px"
         }}
       >
-        <div className="card">
-          <h2>Backend Status</h2>
 
-          {api ? (
-            <>
-              <p><b>Message :</b> {api.message}</p>
-              <p><b>Version :</b> {api.version}</p>
-              <p><b>Status :</b> {api.status}</p>
-            </>
-          ) : (
-            <p>Loading...</p>
-          )}
-        </div>
 
-        <div className="card">
-          <h2>Latest Financial Year</h2>
+        <InfoCard
 
-          <h2>
-            {latestYear?.latest_year ??
-              dashboard?.latest_year ??
-              "Loading..."}
-          </h2>
-        </div>
+          title="Backend Status"
 
-        <div className="card">
-          <h2>Total Revenue</h2>
+          value={
+            api?.status || "Offline"
+          }
 
-          <h2>
-            {dashboard
-              ? `₹ ${Number(
-                  dashboard.total_revenue
-                ).toLocaleString("en-IN")}`
-              : "Loading..."}
-          </h2>
-        </div>
+        />
 
-        <div className="card">
-          <h2>Total Net Profit</h2>
 
-          <h2>
-            {dashboard
-              ? `₹ ${Number(
-                  dashboard.total_profit
-                ).toLocaleString("en-IN")}`
-              : "Loading..."}
-          </h2>
-        </div>
 
-        <div className="card">
-          <h2>Top Revenue Company</h2>
+        <InfoCard
 
-          <h3>
-            {topRevenue?.company_name ??
-              "Loading..."}
-          </h3>
-        </div>
+          title="Latest Financial Year"
 
-        <div className="card">
-          <h2>Top Profit Company</h2>
+          value={
+            latestYear?.latest_year ??
+            dashboard?.latest_year ??
+            "-"
+          }
 
-          <h3>
-            {topProfit?.company_name ??
-              "Loading..."}
-          </h3>
-        </div>
+        />
 
-        <div className="card">
-          <h2>Sector Distribution</h2>
 
-          <h2>
-            {sectorData.length
-              ? `${sectorData.length} Sectors`
-              : "Loading..."}
-          </h2>
-        </div>
+
+        <InfoCard
+
+          title="Total Revenue"
+
+          value={
+            dashboard
+            ?
+            `₹ ${Number(
+              dashboard.total_revenue
+            ).toLocaleString("en-IN")}`
+            :
+            "-"
+          }
+
+        />
+
+
+
+        <InfoCard
+
+          title="Total Profit"
+
+          value={
+            dashboard
+            ?
+            `₹ ${Number(
+              dashboard.total_profit
+            ).toLocaleString("en-IN")}`
+            :
+            "-"
+          }
+
+        />
+
+
+
+        <InfoCard
+
+          title="Top Revenue Company"
+
+          value={
+            topRevenue?.company_name || "-"
+          }
+
+        />
+
+
+
+        <InfoCard
+
+          title="Top Profit Company"
+
+          value={
+            topProfit?.company_name || "-"
+          }
+
+        />
+
+
+        <InfoCard
+
+          title="Sector Distribution"
+
+          value={
+            `${sectorData.length} Sectors`
+          }
+
+        />
+
+
       </div>
 
-      {/* ================= Charts ================= */}
+
+
+
+
+
+
+
+      {/* ================= CHARTS ================= */}
+
+
 
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(500px,1fr))",
-          gap: "25px",
-          marginTop: "40px",
+          display:"grid",
+          gridTemplateColumns:
+          "repeat(auto-fit,minmax(500px,1fr))",
+          gap:"25px",
+          marginTop:"40px"
         }}
       >
-        <DashboardChart dashboard={dashboard} />
 
-        <SectorPieChart sectorData={sectorData} />
+
+        <DashboardChart
+
+          dashboard={dashboard}
+
+        />
+
+
+        <SectorPieChart
+
+          sectorData={sectorData}
+
+        />
+
+
       </div>
 
-      {/* ================= Revenue & Profit Ranking ================= */}
+
+
+
+
+
+
+
+      {/* ================= RANKINGS ================= */}
+
+
 
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(500px,1fr))",
-          gap: "25px",
-          marginTop: "40px",
+          display:"grid",
+          gridTemplateColumns:
+          "repeat(auto-fit,minmax(500px,1fr))",
+          gap:"25px",
+          marginTop:"40px"
         }}
       >
-        <RevenueRanking data={revenueRanking} />
 
-        <ProfitRanking data={profitRanking} />
+
+        <RevenueRanking
+
+          data={revenueRanking}
+
+        />
+
+
+        <ProfitRanking
+
+          data={profitRanking}
+
+        />
+
+
       </div>
 
-      {/* ================= Sector Analytics ================= */}
 
-      <div
-        style={{
-          marginTop: "40px",
-        }}
-      >
-        <SectorAnalytics data={sectorData} />
-      </div>
 
-      {/* ================= Analytics Overview ================= */}
 
-      <AnalyticsOverview dashboard={dashboard} />
+
+
+
+      {/* ================= SECTOR ANALYTICS ================= */}
+
+
+
+      <SectorAnalytics
+
+        data={sectorData}
+
+      />
+
+
+
+
+
+
+      {/* ================= ANALYTICS SUMMARY ================= */}
+
+
+
+      <AnalyticsOverview
+
+        dashboard={dashboard}
+
+      />
+
+
 
     </Layout>
+
   );
+
 }
+
+
+
+
+
+function InfoCard({
+  title,
+  value
+}) {
+
+
+  return (
+
+    <div className="card">
+
+
+      <h2>
+        {title}
+      </h2>
+
+
+      <h3>
+        {value}
+      </h3>
+
+
+    </div>
+
+  );
+
+}
+
+
 
 export default Dashboard;

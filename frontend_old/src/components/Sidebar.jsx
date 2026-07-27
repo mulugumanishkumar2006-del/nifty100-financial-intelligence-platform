@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+
 import {
   FaChartLine,
   FaBuilding,
@@ -7,106 +8,266 @@ import {
   FaDatabase,
 } from "react-icons/fa";
 
+
 function Sidebar() {
+
+
   const menuStyle = ({ isActive }) => ({
     display: "flex",
     alignItems: "center",
     gap: "12px",
+
     padding: "14px 18px",
+
     marginBottom: "12px",
-    borderRadius: "10px",
+
+    borderRadius: "12px",
+
     textDecoration: "none",
-    color: isActive ? "#ffffff" : "#d1d5db",
-    background: isActive ? "#2563eb" : "transparent",
-    transition: "0.3s",
+
+    color: isActive
+      ? "#ffffff"
+      : "#cbd5e1",
+
+    background: isActive
+      ? "linear-gradient(135deg,#2563eb,#1d4ed8)"
+      : "transparent",
+
     fontWeight: "600",
+
     fontSize: "15px",
+
+    transition: "all 0.3s ease",
+
+    boxShadow: isActive
+      ? "0 8px 20px rgba(37,99,235,0.35)"
+      : "none",
   });
 
+
+
   return (
-    <div
+
+    <aside
+
       style={{
-        width: "260px",
-        background: "#111827",
-        color: "#ffffff",
-        padding: "25px",
-        minHeight: "100vh",
-        boxSizing: "border-box",
+
+        width:"260px",
+
+        minHeight:"100vh",
+
+        background:"#0f172a",
+
+        color:"#ffffff",
+
+        padding:"25px",
+
+        display:"flex",
+
+        flexDirection:"column",
+
+        boxSizing:"border-box",
+
       }}
+
     >
+
+
+
       {/* Logo */}
 
       <div
+
         style={{
-          textAlign: "center",
-          marginBottom: "40px",
+
+          textAlign:"center",
+
+          marginBottom:"40px",
+
         }}
+
       >
+
         <h2
+
           style={{
-            margin: 0,
-            color: "#60a5fa",
+
+            margin:0,
+
+            color:"#60a5fa",
+
+            fontSize:"24px",
+
           }}
+
         >
+
           📈 NIFTY100
+
         </h2>
 
+
         <p
+
           style={{
-            color: "#9ca3af",
-            fontSize: "13px",
-            marginTop: "8px",
+
+            color:"#94a3b8",
+
+            fontSize:"13px",
+
+            marginTop:"8px",
+
           }}
+
         >
+
           Financial Intelligence
+
         </p>
+
+
       </div>
 
-      {/* Navigation */}
 
-      <NavLink to="/" style={menuStyle}>
-        <FaChartLine />
-        Dashboard
-      </NavLink>
 
-      <NavLink to="/companies" style={menuStyle}>
-        <FaBuilding />
-        Companies
-      </NavLink>
 
-      <NavLink to="/analytics" style={menuStyle}>
-        <FaChartBar />
-        Analytics
-      </NavLink>
 
-      <NavLink to="/financial-ratios" style={menuStyle}>
-        <FaPercentage />
-        Financial Ratios
-      </NavLink>
+      {/* Menu */}
 
-      <NavLink to="/stock-prices" style={menuStyle}>
-        <FaDatabase />
-        Stock Prices
-      </NavLink>
+
+      <nav>
+
+
+        <NavLink
+
+          to="/"
+
+          style={menuStyle}
+
+        >
+
+          <FaChartLine />
+
+          Dashboard
+
+        </NavLink>
+
+
+
+
+        <NavLink
+
+          to="/companies"
+
+          style={menuStyle}
+
+        >
+
+          <FaBuilding />
+
+          Companies
+
+        </NavLink>
+
+
+
+
+
+        <NavLink
+
+          to="/analytics"
+
+          style={menuStyle}
+
+        >
+
+          <FaChartBar />
+
+          Analytics
+
+        </NavLink>
+
+
+
+
+
+        <NavLink
+
+          to="/financial-ratios"
+
+          style={menuStyle}
+
+        >
+
+          <FaPercentage />
+
+          Financial Ratios
+
+        </NavLink>
+
+
+
+
+
+        <NavLink
+
+          to="/stock-prices"
+
+          style={menuStyle}
+
+        >
+
+          <FaDatabase />
+
+          Stock Prices
+
+        </NavLink>
+
+
+      </nav>
+
+
+
+
 
       {/* Footer */}
 
+
       <div
+
         style={{
-          position: "absolute",
-          bottom: "20px",
-          width: "210px",
-          color: "#6b7280",
-          fontSize: "12px",
-          textAlign: "center",
+
+          marginTop:"auto",
+
+          textAlign:"center",
+
+          color:"#64748b",
+
+          fontSize:"12px",
+
+          paddingTop:"30px",
+
         }}
+
       >
+
         Version 1.0
-        <br />
+
+        <br/>
+
         Bluestock FinTech Internship
+
+
       </div>
-    </div>
+
+
+
+    </aside>
+
+
   );
+
 }
+
 
 export default Sidebar;

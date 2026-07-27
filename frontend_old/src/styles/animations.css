@@ -1,0 +1,54 @@
+.card-animation {
+
+    transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+
+}
+
+
+.card-animation:hover {
+
+    transform:
+    translateY(-6px);
+
+    box-shadow:
+    0 15px 30px rgba(0,0,0,0.12);
+
+}
+
+
+
+.fade-in {
+
+    animation:
+    fadeIn 0.5s ease-in-out;
+
+}
+
+
+
+@keyframes fadeIn {
+
+
+    from {
+
+        opacity:0;
+
+        transform:
+        translateY(20px);
+
+    }
+
+
+    to {
+
+        opacity:1;
+
+        transform:
+        translateY(0);
+
+    }
+
+
+}
