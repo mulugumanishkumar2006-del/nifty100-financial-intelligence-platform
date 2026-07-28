@@ -6,8 +6,8 @@ import CompanyDetails from "./pages/CompanyDetails";
 import Analytics from "./pages/Analytics";
 import FinancialRatios from "./pages/FinancialRatios";
 import StockPrices from "./pages/StockPrices";
-
-
+import StockScreener from "./pages/StockScreener";
+import CompareCompanies from "./pages/CompareCompanies";
 function App() {
 
   return (
@@ -66,8 +66,16 @@ function App() {
           />
         }
       />
-
+      <Route
+  path="/stock-screener"
+  element={<StockScreener />}
+/>
+<Route
+  path="/compare"
+  element={<CompareCompanies />}
+/>
     </Routes>
+    
 
   );
 

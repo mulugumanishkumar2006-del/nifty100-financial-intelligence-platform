@@ -6,33 +6,89 @@ function CompanyTable({ companies = [] }) {
   const [sector, setSector] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const rowsPerPage = 5;
+  const [sortField, setSortField] = useState("company_name");
+  const [ascending, setAscending] = useState(true);
 
-  // Get unique sectors from backend data
+  const rowsPerPage = 10;
+
+  // =============================
+  // Unique Sectors
+  // =============================
+
   const sectors = useMemo(() => {
-    const sectorList = companies
+    const list = companies
       .map((company) => company.sector)
       .filter(Boolean);
 
-    return ["All", ...new Set(sectorList)];
+    return ["All", ...new Set(list)];
   }, [companies]);
 
-  // Search + Filter
+  // =============================
+  // Sort
+  // =============================
+
+  function handleSort(field) {
+    if (field === sortField) {
+      setAscending(!ascending);
+    } else {
+      setSortField(field);
+      setAscending(true);
+    }
+  }
+
+  // =============================
+  // Search + Filter + Sort
+  // =============================
+
   const filteredCompanies = useMemo(() => {
-    return companies.filter((company) => {
-      const matchesSearch =
-        company.company_name
-          ?.toLowerCase()
-          .includes(search.toLowerCase()) || false;
+    let result = [...companies];
 
-      const matchesSector =
-        sector === "All" || company.sector === sector;
+    // Search
+    result = result.filter((company) =>
+      company.company_name
+        ?.toLowerCase()
+        .includes(search.toLowerCase())
+    );
 
-      return matchesSearch && matchesSector;
+    // Sector
+    if (sector !== "All") {
+      result = result.filter(
+        (company) => company.sector === sector
+      );
+    }
+
+    // Sorting
+    result.sort((a, b) => {
+      const valueA = a[sortField] ?? "";
+      const valueB = b[sortField] ?? "";
+
+      if (
+        typeof valueA === "number" &&
+        typeof valueB === "number"
+      ) {
+        return ascending
+          ? valueA - valueB
+          : valueB - valueA;
+      }
+
+      return ascending
+        ? String(valueA).localeCompare(String(valueB))
+        : String(valueB).localeCompare(String(valueA));
     });
-  }, [companies, search, sector]);
 
+    return result;
+  }, [
+    companies,
+    search,
+    sector,
+    sortField,
+    ascending,
+  ]);
+
+  // =============================
   // Pagination
+  // =============================
+
   const totalPages = Math.max(
     1,
     Math.ceil(filteredCompanies.length / rowsPerPage)
@@ -43,10 +99,14 @@ function CompanyTable({ companies = [] }) {
     currentPage * rowsPerPage
   );
 
+  // =============================
+  // UI
+  // =============================
+
   return (
     <div
       style={{
-        background: "#fff",
+        background: "#ffffff",
         borderRadius: "15px",
         padding: "25px",
         boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
@@ -57,7 +117,7 @@ function CompanyTable({ companies = [] }) {
       <div
         style={{
           display: "flex",
-          gap: "20px",
+          gap: "15px",
           marginBottom: "25px",
           flexWrap: "wrap",
         }}
@@ -72,9 +132,11 @@ function CompanyTable({ companies = [] }) {
           }}
           style={{
             flex: 1,
+            minWidth: "250px",
             padding: "12px",
             borderRadius: "8px",
             border: "1px solid #d1d5db",
+            fontSize: "15px",
           }}
         />
 
@@ -91,7 +153,10 @@ function CompanyTable({ companies = [] }) {
           }}
         >
           {sectors.map((item) => (
-            <option key={item} value={item}>
+            <option
+              key={item}
+              value={item}
+            >
               {item}
             </option>
           ))}
@@ -110,15 +175,59 @@ function CompanyTable({ companies = [] }) {
           <tr
             style={{
               background: "#2563eb",
-              color: "white",
+              color: "#ffffff",
             }}
           >
-            <th style={{ padding: "12px" }}>ID</th>
-            <th>Company</th>
-            <th>Website</th>
-            <th>Book Value</th>
-            <th>ROE %</th>
-            <th>Details</th>
+            <th
+              style={headerStyle}
+              onClick={() => handleSort("id")}
+            >
+              #
+            </th>
+
+            <th
+              style={headerStyle}
+              onClick={() =>
+                handleSort("company_name")
+              }
+            >
+              Company
+            </th>
+
+            <th style={headerStyle}>
+              Website
+            </th>
+
+            <th
+              style={headerStyle}
+              onClick={() =>
+                handleSort("book_value")
+              }
+            >
+              Book Value
+            </th>
+
+            <th
+              style={headerStyle}
+              onClick={() =>
+                handleSort("roe_percentage")
+              }
+            >
+              ROE %
+            </th>
+
+            <th
+              style={headerStyle}
+              onClick={() =>
+                handleSort("roce_percentage")
+              }
+            >
+              ROCE %
+            </th>
+
+            <th style={headerStyle}>
+              Action
+            </th>
           </tr>
         </thead>
 
@@ -126,13 +235,13 @@ function CompanyTable({ companies = [] }) {
           {paginatedCompanies.length === 0 ? (
             <tr>
               <td
-                colSpan="6"
+                colSpan="7"
                 style={{
+                  padding: "30px",
                   textAlign: "center",
-                  padding: "20px",
                 }}
               >
-                No companies found.
+                No Companies Found
               </td>
             </tr>
           ) : (
@@ -140,14 +249,22 @@ function CompanyTable({ companies = [] }) {
               <tr
                 key={company.id}
                 style={{
-                  borderBottom: "1px solid #e5e7eb",
+                  borderBottom:
+                    "1px solid #e5e7eb",
+                  transition: "0.3s",
                 }}
               >
-                <td style={{ padding: "12px" }}>{company.id}</td>
+                <td style={cellStyle}>
+                  {company.id}
+                </td>
 
-                <td>{company.company_name}</td>
+                <td style={cellStyle}>
+                  <strong>
+                    {company.company_name}
+                  </strong>
+                </td>
 
-                <td>
+                <td style={cellStyle}>
                   {company.website ? (
                     <a
                       href={company.website}
@@ -161,19 +278,29 @@ function CompanyTable({ companies = [] }) {
                   )}
                 </td>
 
-                <td>{company.book_value ?? "-"}</td>
+                <td style={cellStyle}>
+                  {company.book_value ?? "-"}
+                </td>
 
-                <td>{company.roe_percentage ?? "-"}</td>
+                <td style={cellStyle}>
+                  {company.roe_percentage ?? "-"}
+                </td>
 
-                <td>
+                <td style={cellStyle}>
+                  {company.roce_percentage ?? "-"}
+                </td>
+
+                <td style={cellStyle}>
                   <Link
                     to={`/company/${company.id}`}
                     style={{
                       background: "#2563eb",
-                      color: "white",
-                      padding: "8px 12px",
-                      borderRadius: "6px",
+                      color: "#fff",
+                      padding:
+                        "8px 14px",
+                      borderRadius: "8px",
                       textDecoration: "none",
+                      fontWeight: "600",
                     }}
                   >
                     View
@@ -192,13 +319,15 @@ function CompanyTable({ companies = [] }) {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          gap: "15px",
+          gap: "20px",
           marginTop: "25px",
         }}
       >
         <button
           onClick={() =>
-            setCurrentPage((page) => Math.max(page - 1, 1))
+            setCurrentPage((page) =>
+              Math.max(page - 1, 1)
+            )
           }
           disabled={currentPage === 1}
         >
@@ -212,10 +341,15 @@ function CompanyTable({ companies = [] }) {
         <button
           onClick={() =>
             setCurrentPage((page) =>
-              Math.min(page + 1, totalPages)
+              Math.min(
+                page + 1,
+                totalPages
+              )
             )
           }
-          disabled={currentPage === totalPages}
+          disabled={
+            currentPage === totalPages
+          }
         >
           Next ▶
         </button>
@@ -223,5 +357,15 @@ function CompanyTable({ companies = [] }) {
     </div>
   );
 }
+
+const headerStyle = {
+  padding: "15px",
+  cursor: "pointer",
+  textAlign: "left",
+};
+
+const cellStyle = {
+  padding: "15px",
+};
 
 export default CompanyTable;

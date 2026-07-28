@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-
+import { FaSearchDollar } from "react-icons/fa";
 import {
   FaChartLine,
   FaBuilding,
@@ -7,7 +7,7 @@ import {
   FaPercentage,
   FaDatabase,
 } from "react-icons/fa";
-
+import { FaBalanceScale } from "react-icons/fa";
 
 function Sidebar() {
 
@@ -227,8 +227,20 @@ function Sidebar() {
       </nav>
 
 
-
-
+      <NavLink
+  to="/stock-screener"
+  style={menuStyle}
+>
+  <FaSearchDollar />
+  Stock Screener
+</NavLink>
+<NavLink
+  to="/compare"
+  style={menuStyle}
+>
+  <FaBalanceScale />
+  Compare
+</NavLink>
 
       {/* Footer */}
 
