@@ -1,6 +1,11 @@
+import { useMemo, useState } from "react";
 import Layout from "../components/Layout";
+import StockOverview from "../components/stock/StockOverview";
 
 function StockPrices() {
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("company");
+
   const stocks = [
     {
       company: "Reliance",
@@ -44,9 +49,38 @@ function StockPrices() {
     },
   ];
 
+  const filteredStocks = useMemo(() => {
+    return [...stocks]
+      .filter((stock) =>
+        stock.company
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      )
+      .sort((a, b) => {
+        if (sortBy === "company") {
+          return a.company.localeCompare(b.company);
+        }
+
+        if (sortBy === "price") {
+          return (
+            parseFloat(
+              b.price.replace(/[₹,]/g, "")
+            ) -
+            parseFloat(
+              a.price.replace(/[₹,]/g, "")
+            )
+          );
+        }
+
+        return 0;
+      });
+  }, [search, sortBy]);
+
   return (
     <Layout>
       <div>
+        {/* Header */}
+
         <h1
           style={{
             fontSize: "32px",
@@ -54,7 +88,7 @@ function StockPrices() {
             marginBottom: "10px",
           }}
         >
-          📉 Stock Prices
+          📉 Stock Prices Dashboard
         </h1>
 
         <p
@@ -63,15 +97,69 @@ function StockPrices() {
             marginBottom: "30px",
           }}
         >
-          Daily stock price overview of selected NIFTY100 companies.
+          Daily stock price overview of selected NIFTY100
+          companies.
         </p>
+
+        {/* Search + Sort */}
+
+        <div
+          style={{
+            display: "flex",
+            gap: "20px",
+            marginBottom: "25px",
+            flexWrap: "wrap",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="🔍 Search Company..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            style={{
+              flex: 1,
+              padding: "12px",
+              borderRadius: "8px",
+              border: "1px solid #d1d5db",
+            }}
+          />
+
+          <select
+            value={sortBy}
+            onChange={(e) =>
+              setSortBy(e.target.value)
+            }
+            style={{
+              padding: "12px",
+              borderRadius: "8px",
+            }}
+          >
+            <option value="company">
+              Company
+            </option>
+
+            <option value="price">
+              Price
+            </option>
+          </select>
+        </div>
+
+        {/* Overview */}
+
+        <StockOverview stocks={filteredStocks} />
+
+        {/* Table */}
 
         <div
           style={{
             background: "#ffffff",
             padding: "25px",
             borderRadius: "12px",
-            boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
+            boxShadow:
+              "0 5px 15px rgba(0,0,0,0.08)",
+            marginTop: "30px",
           }}
         >
           <table
@@ -87,53 +175,66 @@ function StockPrices() {
                   color: "#ffffff",
                 }}
               >
-                <th style={{ padding: "12px" }}>Company</th>
+                <th style={{ padding: "12px" }}>
+                  Company
+                </th>
+
                 <th>Current Price</th>
+
                 <th>Daily Change</th>
+
                 <th>52W High</th>
+
                 <th>52W Low</th>
+
                 <th>Volume</th>
               </tr>
             </thead>
 
             <tbody>
-              {stocks.map((stock, index) => (
-                <tr
-                  key={index}
-                  style={{
-                    borderBottom: "1px solid #e5e7eb",
-                    textAlign: "center",
-                  }}
-                >
-                  <td
+              {filteredStocks.map(
+                (stock, index) => (
+                  <tr
+                    key={index}
                     style={{
-                      padding: "12px",
-                      fontWeight: "600",
+                      borderBottom:
+                        "1px solid #e5e7eb",
+                      textAlign: "center",
                     }}
                   >
-                    {stock.company}
-                  </td>
+                    <td
+                      style={{
+                        padding: "12px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {stock.company}
+                    </td>
 
-                  <td>{stock.price}</td>
+                    <td>{stock.price}</td>
 
-                  <td
-                    style={{
-                      color: stock.change.startsWith("+")
-                        ? "#16a34a"
-                        : "#dc2626",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {stock.change}
-                  </td>
+                    <td
+                      style={{
+                        color:
+                          stock.change.startsWith(
+                            "+"
+                          )
+                            ? "#16a34a"
+                            : "#dc2626",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {stock.change}
+                    </td>
 
-                  <td>{stock.high52}</td>
+                    <td>{stock.high52}</td>
 
-                  <td>{stock.low52}</td>
+                    <td>{stock.low52}</td>
 
-                  <td>{stock.volume}</td>
-                </tr>
-              ))}
+                    <td>{stock.volume}</td>
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
         </div>
@@ -144,7 +245,8 @@ function StockPrices() {
           style={{
             marginTop: "30px",
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+            gridTemplateColumns:
+              "repeat(auto-fit,minmax(250px,1fr))",
             gap: "20px",
           }}
         >
@@ -153,11 +255,17 @@ function StockPrices() {
               background: "#ffffff",
               padding: "20px",
               borderRadius: "12px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
+              boxShadow:
+                "0 5px 15px rgba(0,0,0,0.08)",
             }}
           >
             <h3>📈 Top Gainer</h3>
-            <h2 style={{ color: "#16a34a" }}>
+
+            <h2
+              style={{
+                color: "#16a34a",
+              }}
+            >
               ICICI Bank (+2.05%)
             </h2>
           </div>
@@ -167,11 +275,17 @@ function StockPrices() {
               background: "#ffffff",
               padding: "20px",
               borderRadius: "12px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
+              boxShadow:
+                "0 5px 15px rgba(0,0,0,0.08)",
             }}
           >
             <h3>📉 Top Loser</h3>
-            <h2 style={{ color: "#dc2626" }}>
+
+            <h2
+              style={{
+                color: "#dc2626",
+              }}
+            >
               TCS (-0.42%)
             </h2>
           </div>
@@ -181,11 +295,17 @@ function StockPrices() {
               background: "#ffffff",
               padding: "20px",
               borderRadius: "12px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
+              boxShadow:
+                "0 5px 15px rgba(0,0,0,0.08)",
             }}
           >
             <h3>📊 Total Volume</h3>
-            <h2 style={{ color: "#2563eb" }}>
+
+            <h2
+              style={{
+                color: "#2563eb",
+              }}
+            >
               26.8M Shares
             </h2>
           </div>

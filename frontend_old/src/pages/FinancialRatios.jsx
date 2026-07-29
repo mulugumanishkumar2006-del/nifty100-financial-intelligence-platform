@@ -1,176 +1,283 @@
+import { useEffect, useMemo, useState } from "react";
 import Layout from "../components/Layout";
+import RatioOverview from "../components/financial/RatioOverview";
+import { getFinancialRatios } from "../services/financialRatioService";
 
 function FinancialRatios() {
-  const ratios = [
-    {
-      company: "Reliance",
-      roe: "18.4%",
-      roce: "20.5%",
-      pe: "28.6",
-      eps: "95.2",
-      debt: "0.42",
-    },
-    {
-      company: "TCS",
-      roe: "45.3%",
-      roce: "58.4%",
-      pe: "32.7",
-      eps: "118.5",
-      debt: "0.02",
-    },
-    {
-      company: "Infosys",
-      roe: "31.8%",
-      roce: "37.2%",
-      pe: "29.4",
-      eps: "67.8",
-      debt: "0.01",
-    },
-    {
-      company: "HDFC Bank",
-      roe: "17.2%",
-      roce: "18.8%",
-      pe: "21.5",
-      eps: "82.4",
-      debt: "0.00",
-    },
-    {
-      company: "ICICI Bank",
-      roe: "19.6%",
-      roce: "21.4%",
-      pe: "19.2",
-      eps: "53.1",
-      debt: "0.00",
-    },
-  ];
+  const [ratios, setRatios] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("roe_percentage");
+
+  useEffect(() => {
+    async function loadRatios() {
+      try {
+        const data = await getFinancialRatios();
+        setRatios(data || []);
+      } catch (error) {
+        console.error("Financial Ratio Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadRatios();
+  }, []);
+
+  const filtered = useMemo(() => {
+    return [...ratios]
+      .filter((item) =>
+        item.company_name
+          ?.toLowerCase()
+          .includes(search.toLowerCase())
+      )
+      .sort(
+        (a, b) =>
+          (Number(b[sortBy]) || 0) -
+          (Number(a[sortBy]) || 0)
+      );
+  }, [ratios, search, sortBy]);
+
+  const avgROE =
+    filtered.length > 0
+      ? (
+          filtered.reduce(
+            (sum, item) =>
+              sum + Number(item.roe_percentage || 0),
+            0
+          ) / filtered.length
+        ).toFixed(2)
+      : 0;
+
+  const avgROCE =
+    filtered.length > 0
+      ? (
+          filtered.reduce(
+            (sum, item) =>
+              sum + Number(item.roce_percentage || 0),
+            0
+          ) / filtered.length
+        ).toFixed(2)
+      : 0;
+
+  const highestEPS =
+    filtered.length > 0
+      ? Math.max(
+          ...filtered.map((x) => Number(x.eps || 0))
+        )
+      : 0;
+
+  if (loading) {
+    return (
+      <Layout>
+        <h2>Loading Financial Ratios...</h2>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <div>
+      <div
+        style={{
+          marginBottom: "30px",
+        }}
+      >
         <h1
           style={{
             fontSize: "32px",
             fontWeight: "700",
-            marginBottom: "10px",
+            color: "#111827",
           }}
         >
-          📈 Financial Ratios
+          📈 Financial Ratios Dashboard
         </h1>
 
         <p
           style={{
             color: "#6b7280",
-            marginBottom: "30px",
           }}
         >
-          Compare important financial ratios across NIFTY100 companies.
+          Compare financial strength across all NIFTY100 companies.
         </p>
+      </div>
 
-        <div
+      <RatioOverview ratios={filtered} />
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(220px,1fr))",
+          gap: "20px",
+          marginBottom: "30px",
+        }}
+      >
+        <StatCard
+          title="Companies"
+          value={filtered.length}
+          color="#2563eb"
+        />
+
+        <StatCard
+          title="Average ROE"
+          value={`${avgROE}%`}
+          color="#16a34a"
+        />
+
+        <StatCard
+          title="Average ROCE"
+          value={`${avgROCE}%`}
+          color="#9333ea"
+        />
+
+        <StatCard
+          title="Highest EPS"
+          value={highestEPS}
+          color="#dc2626"
+        />
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          marginBottom: "25px",
+          flexWrap: "wrap",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="🔍 Search Company..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           style={{
-            background: "#ffffff",
-            borderRadius: "12px",
-            padding: "25px",
-            boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
+            flex: 1,
+            minWidth: "250px",
+            padding: "12px",
+            borderRadius: "8px",
+            border: "1px solid #d1d5db",
+          }}
+        />
+
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          style={{
+            padding: "12px",
+            borderRadius: "8px",
+            border: "1px solid #d1d5db",
           }}
         >
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-            }}
-          >
-            <thead>
+          <option value="roe_percentage">Sort by ROE</option>
+          <option value="roce_percentage">Sort by ROCE</option>
+          <option value="pe_ratio">Sort by P/E</option>
+          <option value="eps">Sort by EPS</option>
+          <option value="book_value">Sort by Book Value</option>
+        </select>
+      </div>
+
+      <div
+        style={{
+          overflowX: "auto",
+          background: "#ffffff",
+          borderRadius: "15px",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+        }}
+      >
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+          }}
+        >
+          <thead>
+            <tr
+              style={{
+                background: "#2563eb",
+                color: "white",
+              }}
+            >
+              <th style={{ padding: "14px" }}>Company</th>
+              <th>ROE</th>
+              <th>ROCE</th>
+              <th>P/E</th>
+              <th>EPS</th>
+              <th>Book Value</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filtered.map((item) => (
               <tr
+                key={item.id}
                 style={{
-                  background: "#2563eb",
-                  color: "#ffffff",
+                  borderBottom: "1px solid #eee",
+                  textAlign: "center",
                 }}
               >
-                <th style={{ padding: "12px" }}>Company</th>
-                <th>ROE</th>
-                <th>ROCE</th>
-                <th>P/E</th>
-                <th>EPS</th>
-                <th>Debt/Equity</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {ratios.map((item, index) => (
-                <tr
-                  key={index}
+                <td
                   style={{
-                    borderBottom: "1px solid #e5e7eb",
-                    textAlign: "center",
+                    padding: "14px",
+                    fontWeight: "600",
                   }}
                 >
-                  <td
-                    style={{
-                      padding: "12px",
-                      fontWeight: "600",
-                    }}
-                  >
-                    {item.company}
-                  </td>
+                  {item.company_name}
+                </td>
 
-                  <td>{item.roe}</td>
-                  <td>{item.roce}</td>
-                  <td>{item.pe}</td>
-                  <td>{item.eps}</td>
-                  <td>{item.debt}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                <td style={{ color: "#16a34a" }}>
+                  {item.roe_percentage ?? "-"}
+                </td>
 
-        <div
-          style={{
-            marginTop: "30px",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-            gap: "20px",
-          }}
-        >
-          <div
-            style={{
-              background: "#ffffff",
-              padding: "20px",
-              borderRadius: "12px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
-            }}
-          >
-            <h3>Highest ROE</h3>
-            <h2 style={{ color: "#16a34a" }}>TCS</h2>
-          </div>
+                <td style={{ color: "#2563eb" }}>
+                  {item.roce_percentage ?? "-"}
+                </td>
 
-          <div
-            style={{
-              background: "#ffffff",
-              padding: "20px",
-              borderRadius: "12px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
-            }}
-          >
-            <h3>Highest ROCE</h3>
-            <h2 style={{ color: "#2563eb" }}>TCS</h2>
-          </div>
+                <td>{item.pe_ratio ?? "-"}</td>
 
-          <div
-            style={{
-              background: "#ffffff",
-              padding: "20px",
-              borderRadius: "12px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
-            }}
-          >
-            <h3>Lowest Debt</h3>
-            <h2 style={{ color: "#dc2626" }}>Infosys</h2>
-          </div>
-        </div>
+                <td style={{ color: "#9333ea" }}>
+                  {item.eps ?? "-"}
+                </td>
+
+                <td>{item.book_value ?? "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Layout>
+  );
+}
+
+function StatCard({ title, value, color }) {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        padding: "20px",
+        borderRadius: "12px",
+        boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
+        borderLeft: `6px solid ${color}`,
+      }}
+    >
+      <h4
+        style={{
+          color: "#6b7280",
+          marginBottom: "10px",
+        }}
+      >
+        {title}
+      </h4>
+
+      <h2
+        style={{
+          color,
+          margin: 0,
+        }}
+      >
+        {value}
+      </h2>
+    </div>
   );
 }
 

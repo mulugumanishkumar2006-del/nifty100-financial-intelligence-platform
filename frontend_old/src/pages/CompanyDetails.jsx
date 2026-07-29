@@ -22,7 +22,7 @@ import ProfitChart from "../components/company/ProfitChart";
 import PeerComparison from "../components/company/PeerComparison";
 
 import { getCompany } from "../services/companyService";
-
+import CompanyComparison from "../components/company/CompanyComparison";
 function CompanyDetails() {
   const { id } = useParams();
 
