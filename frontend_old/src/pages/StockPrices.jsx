@@ -17,7 +17,7 @@ import { getStockPrices } from "../services/stockService";
 function StockPrices() {
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("company");
 
@@ -28,26 +28,64 @@ function StockPrices() {
   async function loadStocks() {
     try {
       setLoading(true);
+      setError("");
 
       const data = await getStockPrices();
 
       const formatted = (data || []).map((item) => ({
-        id: item.company_id || item.id,
-        company: item.company_name || item.company || "Unknown",
+        id: item.id,
+
+        company:
+          item.company_name ||
+          "Unknown",
+
         price: Number(
-          item.close ?? item.current_price ?? item.price ?? 0
+          item.close_price ??
+          item.close ??
+          item.current_price ??
+          item.price ??
+          0
         ),
+
         change: Number(
-          item.change_percentage ?? item.change ?? 0
+          item.change_percentage ??
+          item.change ??
+          0
         ),
-        high52: Number(item.high_52 ?? item.high ?? 0),
-        low52: Number(item.low_52 ?? item.low ?? 0),
-        volume: Number(item.volume ?? 0),
+
+        high52: Number(
+          item.high_price ??
+          item.high_52 ??
+          item.high ??
+          0
+        ),
+
+        low52: Number(
+          item.low_price ??
+          item.low_52 ??
+          item.low ??
+          0
+        ),
+
+        volume: Number(
+          item.volume ?? 0
+        ),
+
+        date: item.date,
+
+        open: Number(
+          item.open_price ?? 0
+        ),
+
+        adjustedClose: Number(
+          item.adjusted_close ?? 0
+        )
       }));
 
       setStocks(formatted);
     } catch (error) {
       console.error("Stock Loading Error:", error);
+      setError("Failed to load stock prices. Please check your network or try again.");
     } finally {
       setLoading(false);
     }
@@ -83,30 +121,70 @@ function StockPrices() {
       ).toFixed(2)
     : 0;
 
-  const totalVolume = filteredStocks.reduce(
-    (sum, s) => sum + s.volume,
-    0
-  );
+  const marketSummary = useMemo(() => {
+    if (!filteredStocks.length) {
+      return {
+        topGainer: null,
+        topLoser: null,
+        totalVolume: 0,
+      };
+    }
 
-  const topGainer = filteredStocks.length
-    ? filteredStocks.reduce((a, b) => (a.change > b.change ? a : b))
-    : null;
+    const topGainer = filteredStocks.reduce((a, b) =>
+      a.change > b.change ? a : b
+    );
 
-  const topLoser = filteredStocks.length
-    ? filteredStocks.reduce((a, b) => (a.change < b.change ? a : b))
-    : null;
+    const topLoser = filteredStocks.reduce((a, b) =>
+      a.change < b.change ? a : b
+    );
+
+    const totalVolume = filteredStocks.reduce(
+      (sum, stock) => sum + stock.volume,
+      0
+    );
+
+    return {
+      topGainer,
+      topLoser,
+      totalVolume,
+    };
+  }, [filteredStocks]);
 
   if (loading && stocks.length === 0) {
     return (
       <Layout>
-        <h2
+        <div
           style={{
-            textAlign: "center",
-            marginTop: 60,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "400px",
+            gap: "16px",
           }}
         >
-          Loading Stock Prices...
-        </h2>
+          <div
+            style={{
+              width: "48px",
+              height: "48px",
+              border: "5px solid #e5e7eb",
+              borderTop: "5px solid #2563eb",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+          <style>
+            {`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}
+          </style>
+          <h2 style={{ color: "#4b5563", fontSize: "18px", fontWeight: "600", margin: 0 }}>
+            Loading Stock Prices...
+          </h2>
+        </div>
       </Layout>
     );
   }
@@ -145,6 +223,40 @@ function StockPrices() {
         </button>
       </div>
 
+      {/* ERROR DISPLAY BANNER */}
+      {error && (
+        <div
+          style={{
+            padding: "16px 20px",
+            marginBottom: "20px",
+            background: "#fef2f2",
+            border: "1px solid #fca5a5",
+            borderRadius: "12px",
+            color: "#991b1b",
+            fontWeight: "600",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span>⚠️ {error}</span>
+          <button
+            onClick={loadStocks}
+            style={{
+              padding: "8px 16px",
+              background: "#dc2626",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* OVERVIEW & STATS */}
       <StockOverview stocks={filteredStocks} />
       
@@ -155,7 +267,7 @@ function StockPrices() {
       <StockStats
         highestPrice={highestPrice}
         averagePrice={averagePrice}
-        totalVolume={totalVolume}
+        totalVolume={marketSummary.totalVolume}
       />
 
       {/* CHARTS */}
@@ -380,8 +492,8 @@ function StockPrices() {
         <SummaryCard
           title="📈 Top Gainer"
           value={
-            topGainer
-              ? `${topGainer.company} (+${topGainer.change.toFixed(2)}%)`
+            marketSummary.topGainer
+              ? `${marketSummary.topGainer.company} (+${marketSummary.topGainer.change.toFixed(2)}%)`
               : "-"
           }
           color="#16a34a"
@@ -390,8 +502,8 @@ function StockPrices() {
         <SummaryCard
           title="📉 Top Loser"
           value={
-            topLoser
-              ? `${topLoser.company} (${topLoser.change.toFixed(2)}%)`
+            marketSummary.topLoser
+              ? `${marketSummary.topLoser.company} (${marketSummary.topLoser.change.toFixed(2)}%)`
               : "-"
           }
           color="#dc2626"
@@ -399,7 +511,7 @@ function StockPrices() {
 
         <SummaryCard
           title="📊 Total Volume"
-          value={totalVolume.toLocaleString()}
+          value={marketSummary.totalVolume.toLocaleString()}
           color="#2563eb"
         />
 

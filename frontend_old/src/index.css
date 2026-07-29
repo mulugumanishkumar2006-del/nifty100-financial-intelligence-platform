@@ -1,42 +1,45 @@
 body {
+  margin: 0;
 
-margin:0;
+  font-family:
+    "Inter",
+    Arial,
+    sans-serif;
 
-font-family:
-
-"Inter",
-Arial,
-sans-serif;
-
-background:#f8fafc;
-
+  background: #f8fafc;
 }
-
 
 * {
-
-box-sizing:border-box;
-
+  box-sizing: border-box;
 }
 
-
-h1,h2,h3 {
-
-font-weight:700;
-
+h1,
+h2,
+h3 {
+  font-weight: 700;
 }
-
 
 .card {
+  background: white;
 
-background:white;
+  padding: 25px;
 
-padding:25px;
+  border-radius: 15px;
 
-border-radius:15px;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.06);
+}
 
-box-shadow:
+/* ================================
+   Loading Spinner Animation
+================================ */
 
-0 8px 20px rgba(0,0,0,0.06);
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
 
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -23,9 +23,10 @@ import SectorAnalytics from "../components/analytics/SectorAnalytics";
 import AnalyticsOverview from "../components/analytics/AnalyticsOverview";
 
 
-// ================= QUICK LINKS (FIXED PATH) =================
+// ================= QUICK LINKS & STATS =================
 
 import QuickLinks from "../dashboard/QuickLinks";
+import DashboardStats from "../components/dashboard/DashboardStats";
 
 
 // ================= ICONS =================
@@ -48,12 +49,10 @@ import {
   getSectorDistribution,
 } from "../services/api";
 
-
 import {
   getRevenueRanking,
   getProfitRanking,
 } from "../services/analyticsService";
-
 
 
 function Dashboard() {
@@ -67,6 +66,11 @@ function Dashboard() {
   const [revenueRanking, setRevenueRanking] = useState([]);
   const [profitRanking, setProfitRanking] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Stats state
+  const [companies, setCompanies] = useState([]);
+  const [sectorSummary, setSectorSummary] = useState([]);
+  const [financialRatios, setFinancialRatios] = useState([]);
 
   useEffect(() => {
 
@@ -88,13 +92,17 @@ function Dashboard() {
           yearData,
           revenueData,
           profitData,
-          sector
+          sector,
+          revenueRank,
+          profitRank
         ] = await Promise.all([
           getDashboard(),
           getLatestYear(),
           getTopRevenue(),
           getTopProfit(),
-          getSectorDistribution()
+          getSectorDistribution(),
+          getRevenueRanking(),
+          getProfitRanking()
         ]);
 
         setDashboard(dashboardData);
@@ -102,18 +110,13 @@ function Dashboard() {
         setTopRevenue(revenueData?.[0] || null);
         setTopProfit(profitData?.[0] || null);
         setSectorData(sector || []);
-
-        // Rankings
-        const [
-          revenueRank,
-          profitRank
-        ] = await Promise.all([
-          getRevenueRanking(),
-          getProfitRanking()
-        ]);
-
         setRevenueRanking(revenueRank || []);
         setProfitRanking(profitRank || []);
+
+        // Safe fallbacks using loaded dashboard data
+        setCompanies(new Array(dashboardData?.companies || 0).fill({}));
+        setSectorSummary(sector || []);
+        setFinancialRatios([]);
 
       } catch (error) {
 
@@ -133,6 +136,10 @@ function Dashboard() {
     loadDashboard();
 
   }, []);
+
+  // Calculate stats
+  const averageROE = dashboard?.average_roe ?? 0;
+  const totalMarketCap = "₹ --";
 
   if (loading) {
 
@@ -162,6 +169,15 @@ function Dashboard() {
     <Layout>
 
       <Header />
+
+      {/* ================= DASHBOARD STATS ================= */}
+
+      <DashboardStats
+        companies={dashboard?.companies ?? companies.length}
+        sectors={sectorData.length}
+        avgROE={averageROE}
+        totalMarketCap={totalMarketCap}
+      />
 
       {/* ================= QUICK NAVIGATION ================= */}
 
