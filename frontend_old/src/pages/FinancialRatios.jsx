@@ -1,284 +1,366 @@
-import { useEffect, useMemo, useState } from "react";
-import Layout from "../components/Layout";
-import RatioOverview from "../components/financial/RatioOverview";
-import { getFinancialRatios } from "../services/financialRatioService";
+import { useEffect, useState } from "react";
 
-function FinancialRatios() {
-  const [ratios, setRatios] = useState([]);
+import Layout from "../components/Layout";
+import Header from "../components/Header";
+
+import StatCard from "../components/StatCard";
+
+import DashboardChart from "../components/DashboardChart";
+import SectorPieChart from "../components/SectorPieChart";
+
+
+// ================= DAY 13 COMPONENTS =================
+
+import MarketOverview from "../dashboard/MarketOverview";
+import InvestmentInsights from "../dashboard/InvestmentInsights";
+
+
+// ================= ANALYTICS COMPONENTS =================
+
+import RevenueRanking from "../components/analytics/RevenueRanking";
+import ProfitRanking from "../components/analytics/ProfitRanking";
+import SectorAnalytics from "../components/analytics/SectorAnalytics";
+import AnalyticsOverview from "../components/analytics/AnalyticsOverview";
+
+
+// ================= QUICK LINKS (FIXED PATH) =================
+
+import QuickLinks from "../dashboard/QuickLinks";
+
+
+// ================= ICONS =================
+
+import {
+  FaBuilding,
+  FaChartBar,
+  FaIndustry,
+  FaDatabase,
+} from "react-icons/fa";
+
+
+// ================= SERVICES =================
+
+import {
+  getDashboard,
+  getLatestYear,
+  getTopRevenue,
+  getTopProfit,
+  getSectorDistribution,
+} from "../services/api";
+
+
+import {
+  getRevenueRanking,
+  getProfitRanking,
+} from "../services/analyticsService";
+
+
+
+function Dashboard() {
+
+  const [api, setApi] = useState(null);
+  const [dashboard, setDashboard] = useState(null);
+  const [latestYear, setLatestYear] = useState(null);
+  const [topRevenue, setTopRevenue] = useState(null);
+  const [topProfit, setTopProfit] = useState(null);
+  const [sectorData, setSectorData] = useState([]);
+  const [revenueRanking, setRevenueRanking] = useState([]);
+  const [profitRanking, setProfitRanking] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("roe_percentage");
-
   useEffect(() => {
-    async function loadRatios() {
+
+    async function loadDashboard() {
+
       try {
-        const data = await getFinancialRatios();
-        setRatios(data || []);
+
+        // Backend health check
+        const response = await fetch(
+          "http://127.0.0.1:8000/"
+        );
+
+        const apiData = await response.json();
+        setApi(apiData);
+
+        // Dashboard APIs
+        const [
+          dashboardData,
+          yearData,
+          revenueData,
+          profitData,
+          sector
+        ] = await Promise.all([
+          getDashboard(),
+          getLatestYear(),
+          getTopRevenue(),
+          getTopProfit(),
+          getSectorDistribution()
+        ]);
+
+        setDashboard(dashboardData);
+        setLatestYear(yearData);
+        setTopRevenue(revenueData?.[0] || null);
+        setTopProfit(profitData?.[0] || null);
+        setSectorData(sector || []);
+
+        // Rankings
+        const [
+          revenueRank,
+          profitRank
+        ] = await Promise.all([
+          getRevenueRanking(),
+          getProfitRanking()
+        ]);
+
+        setRevenueRanking(revenueRank || []);
+        setProfitRanking(profitRank || []);
+
       } catch (error) {
-        console.error("Financial Ratio Error:", error);
+
+        console.error(
+          "Dashboard Loading Error:",
+          error
+        );
+
       } finally {
+
         setLoading(false);
+
       }
+
     }
 
-    loadRatios();
+    loadDashboard();
+
   }, []);
 
-  const filtered = useMemo(() => {
-    return [...ratios]
-      .filter((item) =>
-        item.company_name
-          ?.toLowerCase()
-          .includes(search.toLowerCase())
-      )
-      .sort(
-        (a, b) =>
-          (Number(b[sortBy]) || 0) -
-          (Number(a[sortBy]) || 0)
-      );
-  }, [ratios, search, sortBy]);
-
-  const avgROE =
-    filtered.length > 0
-      ? (
-          filtered.reduce(
-            (sum, item) =>
-              sum + Number(item.roe_percentage || 0),
-            0
-          ) / filtered.length
-        ).toFixed(2)
-      : 0;
-
-  const avgROCE =
-    filtered.length > 0
-      ? (
-          filtered.reduce(
-            (sum, item) =>
-              sum + Number(item.roce_percentage || 0),
-            0
-          ) / filtered.length
-        ).toFixed(2)
-      : 0;
-
-  const highestEPS =
-    filtered.length > 0
-      ? Math.max(
-          ...filtered.map((x) => Number(x.eps || 0))
-        )
-      : 0;
-
   if (loading) {
+
     return (
+
       <Layout>
-        <h2>Loading Financial Ratios...</h2>
+
+        <Header />
+
+        <h2
+          style={{
+            textAlign: "center",
+            marginTop: "60px",
+          }}
+        >
+          Loading Dashboard...
+        </h2>
+
       </Layout>
+
     );
+
   }
 
   return (
-    <Layout>
-      <div
-        style={{
-          marginBottom: "30px",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "32px",
-            fontWeight: "700",
-            color: "#111827",
-          }}
-        >
-          📈 Financial Ratios Dashboard
-        </h1>
 
-        <p
+    <Layout>
+
+      <Header />
+
+      {/* ================= QUICK NAVIGATION ================= */}
+
+      <div style={{ marginTop: "30px" }}>
+        <h2
           style={{
-            color: "#6b7280",
+            marginBottom: "20px",
           }}
         >
-          Compare financial strength across all NIFTY100 companies.
-        </p>
+          Quick Navigation
+        </h2>
+        <QuickLinks />
       </div>
 
-      <RatioOverview ratios={filtered} />
+      {/* ================= KPI CARDS ================= */}
 
       <div
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(auto-fit,minmax(220px,1fr))",
+            "repeat(auto-fit,minmax(260px,1fr))",
           gap: "20px",
-          marginBottom: "30px",
+          marginTop: "30px",
         }}
       >
+
         <StatCard
           title="Companies"
-          value={filtered.length}
+          value={dashboard?.companies ?? 0}
+          subtitle="Listed Companies"
+          icon={<FaBuilding />}
           color="#2563eb"
         />
 
         <StatCard
           title="Average ROE"
-          value={`${avgROE}%`}
+          value={
+            dashboard ? `${dashboard.average_roe}%` : "0%"
+          }
+          subtitle="Return on Equity"
+          icon={<FaChartBar />}
           color="#16a34a"
         />
 
         <StatCard
           title="Average ROCE"
-          value={`${avgROCE}%`}
-          color="#9333ea"
+          value={
+            dashboard ? `${dashboard.average_roce}%` : "0%"
+          }
+          subtitle="Capital Efficiency"
+          icon={<FaDatabase />}
+          color="#dc2626"
         />
 
         <StatCard
-          title="Highest EPS"
-          value={highestEPS}
-          color="#dc2626"
+          title="Sectors"
+          value={dashboard?.total_sectors ?? 0}
+          subtitle="Market Sectors"
+          icon={<FaIndustry />}
+          color="#9333ea"
         />
+
       </div>
+
+      {/* ================= DAY 13 FEATURES ================= */}
+
+      <MarketOverview dashboard={dashboard} />
+
+      <InvestmentInsights dashboard={dashboard} />
+
+      {/* ================= SUMMARY CARDS ================= */}
 
       <div
         style={{
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(300px,1fr))",
           gap: "20px",
-          marginBottom: "25px",
-          flexWrap: "wrap",
+          marginTop: "35px",
         }}
       >
-        <input
-          type="text"
-          placeholder="🔍 Search Company..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            flex: 1,
-            minWidth: "250px",
-            padding: "12px",
-            borderRadius: "8px",
-            border: "1px solid #d1d5db",
-          }}
+
+        <InfoCard
+          title="Backend Status"
+          value={api?.status || "Offline"}
         />
 
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          style={{
-            padding: "12px",
-            borderRadius: "8px",
-            border: "1px solid #d1d5db",
-          }}
-        >
-          <option value="roe_percentage">Sort by ROE</option>
-          <option value="roce_percentage">Sort by ROCE</option>
-          <option value="pe_ratio">Sort by P/E</option>
-          <option value="eps">Sort by EPS</option>
-          <option value="book_value">Sort by Book Value</option>
-        </select>
+        <InfoCard
+          title="Latest Financial Year"
+          value={
+            latestYear?.latest_year ??
+            dashboard?.latest_year ??
+            "-"
+          }
+        />
+
+        <InfoCard
+          title="Total Revenue"
+          value={
+            dashboard
+              ? `₹ ${Number(
+                  dashboard.total_revenue
+                ).toLocaleString("en-IN")}`
+              : "-"
+          }
+        />
+
+        <InfoCard
+          title="Total Profit"
+          value={
+            dashboard
+              ? `₹ ${Number(
+                  dashboard.total_profit
+                ).toLocaleString("en-IN")}`
+              : "-"
+          }
+        />
+
+        <InfoCard
+          title="Top Revenue Company"
+          value={topRevenue?.company_name || "-"}
+        />
+
+        <InfoCard
+          title="Top Profit Company"
+          value={topProfit?.company_name || "-"}
+        />
+
+        <InfoCard
+          title="Sector Distribution"
+          value={`${sectorData.length} Sectors`}
+        />
+
       </div>
+
+      {/* ================= CHARTS ================= */}
 
       <div
         style={{
-          overflowX: "auto",
-          background: "#ffffff",
-          borderRadius: "15px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(500px,1fr))",
+          gap: "25px",
+          marginTop: "40px",
         }}
       >
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-          }}
-        >
-          <thead>
-            <tr
-              style={{
-                background: "#2563eb",
-                color: "white",
-              }}
-            >
-              <th style={{ padding: "14px" }}>Company</th>
-              <th>ROE</th>
-              <th>ROCE</th>
-              <th>P/E</th>
-              <th>EPS</th>
-              <th>Book Value</th>
-            </tr>
-          </thead>
 
-          <tbody>
-            {filtered.map((item) => (
-              <tr
-                key={item.id}
-                style={{
-                  borderBottom: "1px solid #eee",
-                  textAlign: "center",
-                }}
-              >
-                <td
-                  style={{
-                    padding: "14px",
-                    fontWeight: "600",
-                  }}
-                >
-                  {item.company_name}
-                </td>
+        <DashboardChart dashboard={dashboard} />
 
-                <td style={{ color: "#16a34a" }}>
-                  {item.roe_percentage ?? "-"}
-                </td>
+        <SectorPieChart sectorData={sectorData} />
 
-                <td style={{ color: "#2563eb" }}>
-                  {item.roce_percentage ?? "-"}
-                </td>
-
-                <td>{item.pe_ratio ?? "-"}</td>
-
-                <td style={{ color: "#9333ea" }}>
-                  {item.eps ?? "-"}
-                </td>
-
-                <td>{item.book_value ?? "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
+
+      {/* ================= RANKINGS ================= */}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(500px,1fr))",
+          gap: "25px",
+          marginTop: "40px",
+        }}
+      >
+
+        <RevenueRanking data={revenueRanking} />
+
+        <ProfitRanking data={profitRanking} />
+
+      </div>
+
+      {/* ================= SECTOR ANALYTICS ================= */}
+
+      <SectorAnalytics data={sectorData} />
+
+      {/* ================= ANALYTICS SUMMARY ================= */}
+
+      <AnalyticsOverview dashboard={dashboard} />
+
     </Layout>
+
   );
+
 }
 
-function StatCard({ title, value, color }) {
+function InfoCard({ title, value }) {
+
   return (
-    <div
-      style={{
-        background: "#fff",
-        padding: "20px",
-        borderRadius: "12px",
-        boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
-        borderLeft: `6px solid ${color}`,
-      }}
-    >
-      <h4
-        style={{
-          color: "#6b7280",
-          marginBottom: "10px",
-        }}
-      >
-        {title}
-      </h4>
 
-      <h2
-        style={{
-          color,
-          margin: 0,
-        }}
-      >
-        {value}
-      </h2>
+    <div className="card">
+
+      <h2>{title}</h2>
+
+      <h3>{value}</h3>
+
     </div>
+
   );
+
 }
 
-export default FinancialRatios;
+export default Dashboard;

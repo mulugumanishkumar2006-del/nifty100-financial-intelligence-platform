@@ -23,6 +23,11 @@ import SectorAnalytics from "../components/analytics/SectorAnalytics";
 import AnalyticsOverview from "../components/analytics/AnalyticsOverview";
 
 
+// ================= QUICK LINKS (FIXED PATH) =================
+
+import QuickLinks from "../dashboard/QuickLinks";
+
+
 // ================= ICONS =================
 
 import {
@@ -53,182 +58,83 @@ import {
 
 function Dashboard() {
 
-
   const [api, setApi] = useState(null);
-
   const [dashboard, setDashboard] = useState(null);
-
   const [latestYear, setLatestYear] = useState(null);
-
   const [topRevenue, setTopRevenue] = useState(null);
-
   const [topProfit, setTopProfit] = useState(null);
-
   const [sectorData, setSectorData] = useState([]);
-
   const [revenueRanking, setRevenueRanking] = useState([]);
-
   const [profitRanking, setProfitRanking] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
-
-
-
 
   useEffect(() => {
 
-
     async function loadDashboard() {
-
 
       try {
 
-
         // Backend health check
-
         const response = await fetch(
           "http://127.0.0.1:8000/"
         );
 
-
-        const apiData =
-          await response.json();
-
-
+        const apiData = await response.json();
         setApi(apiData);
 
-
-
-
         // Dashboard APIs
-
         const [
-
           dashboardData,
-
           yearData,
-
           revenueData,
-
           profitData,
-
           sector
-
         ] = await Promise.all([
-
-
           getDashboard(),
-
           getLatestYear(),
-
           getTopRevenue(),
-
           getTopProfit(),
-
           getSectorDistribution()
-
-
         ]);
 
-
-
-        setDashboard(
-          dashboardData
-        );
-
-
-        setLatestYear(
-          yearData
-        );
-
-
-        setTopRevenue(
-          revenueData?.[0] || null
-        );
-
-
-        setTopProfit(
-          profitData?.[0] || null
-        );
-
-
-        setSectorData(
-          sector || []
-        );
-
-
-
+        setDashboard(dashboardData);
+        setLatestYear(yearData);
+        setTopRevenue(revenueData?.[0] || null);
+        setTopProfit(profitData?.[0] || null);
+        setSectorData(sector || []);
 
         // Rankings
-
         const [
-
           revenueRank,
-
           profitRank
-
         ] = await Promise.all([
-
-
           getRevenueRanking(),
-
           getProfitRanking()
-
-
         ]);
 
+        setRevenueRanking(revenueRank || []);
+        setProfitRanking(profitRank || []);
 
-
-        setRevenueRanking(
-          revenueRank || []
-        );
-
-
-        setProfitRanking(
-          profitRank || []
-        );
-
-
-
-      }
-
-      catch(error) {
-
+      } catch (error) {
 
         console.error(
           "Dashboard Loading Error:",
           error
         );
 
-
-      }
-
-      finally {
-
+      } finally {
 
         setLoading(false);
 
-
       }
-
 
     }
 
-
-
     loadDashboard();
-
 
   }, []);
 
-
-
-
-
-
-  if(loading) {
-
+  if (loading) {
 
     return (
 
@@ -236,7 +142,12 @@ function Dashboard() {
 
         <Header />
 
-        <h2>
+        <h2
+          style={{
+            textAlign: "center",
+            marginTop: "60px",
+          }}
+        >
           Loading Dashboard...
         </h2>
 
@@ -244,366 +155,191 @@ function Dashboard() {
 
     );
 
-
   }
-
-
-
-
-
 
   return (
 
     <Layout>
 
-
       <Header />
 
+      {/* ================= QUICK NAVIGATION ================= */}
 
+      <div style={{ marginTop: "30px" }}>
+        <h2
+          style={{
+            marginBottom: "20px",
+          }}
+        >
+          Quick Navigation
+        </h2>
+        <QuickLinks />
+      </div>
 
       {/* ================= KPI CARDS ================= */}
 
-
       <div
         style={{
-          display:"grid",
+          display: "grid",
           gridTemplateColumns:
-          "repeat(auto-fit,minmax(260px,1fr))",
-          gap:"20px",
-          marginTop:"30px"
+            "repeat(auto-fit,minmax(260px,1fr))",
+          gap: "20px",
+          marginTop: "30px",
         }}
       >
 
-
         <StatCard
-
           title="Companies"
-
-          value={
-            dashboard?.companies ?? 0
-          }
-
+          value={dashboard?.companies ?? 0}
           subtitle="Listed Companies"
-
           icon={<FaBuilding />}
-
           color="#2563eb"
-
         />
 
-
-
         <StatCard
-
           title="Average ROE"
-
           value={
-            dashboard
-            ?
-            `${dashboard.average_roe}%`
-            :
-            "0%"
+            dashboard ? `${dashboard.average_roe}%` : "0%"
           }
-
           subtitle="Return on Equity"
-
           icon={<FaChartBar />}
-
           color="#16a34a"
-
         />
 
-
-
         <StatCard
-
           title="Average ROCE"
-
           value={
-            dashboard
-            ?
-            `${dashboard.average_roce}%`
-            :
-            "0%"
+            dashboard ? `${dashboard.average_roce}%` : "0%"
           }
-
           subtitle="Capital Efficiency"
-
           icon={<FaDatabase />}
-
           color="#dc2626"
-
         />
-
-
 
         <StatCard
-
           title="Sectors"
-
-          value={
-            dashboard?.total_sectors ?? 0
-          }
-
+          value={dashboard?.total_sectors ?? 0}
           subtitle="Market Sectors"
-
           icon={<FaIndustry />}
-
           color="#9333ea"
-
         />
-
 
       </div>
 
-
-
-
-
-
       {/* ================= DAY 13 FEATURES ================= */}
 
+      <MarketOverview dashboard={dashboard} />
 
-      <MarketOverview
-
-        dashboard={dashboard}
-
-      />
-
-
-      <InvestmentInsights
-
-        dashboard={dashboard}
-
-      />
-
-
-
-
-
-
+      <InvestmentInsights dashboard={dashboard} />
 
       {/* ================= SUMMARY CARDS ================= */}
 
-
-
       <div
         style={{
-          display:"grid",
+          display: "grid",
           gridTemplateColumns:
-          "repeat(auto-fit,minmax(300px,1fr))",
-          gap:"20px",
-          marginTop:"35px"
+            "repeat(auto-fit,minmax(300px,1fr))",
+          gap: "20px",
+          marginTop: "35px",
         }}
       >
 
-
         <InfoCard
-
           title="Backend Status"
-
-          value={
-            api?.status || "Offline"
-          }
-
+          value={api?.status || "Offline"}
         />
 
-
-
         <InfoCard
-
           title="Latest Financial Year"
-
           value={
             latestYear?.latest_year ??
             dashboard?.latest_year ??
             "-"
           }
-
         />
 
-
-
         <InfoCard
-
           title="Total Revenue"
-
           value={
             dashboard
-            ?
-            `₹ ${Number(
-              dashboard.total_revenue
-            ).toLocaleString("en-IN")}`
-            :
-            "-"
+              ? `₹ ${Number(
+                  dashboard.total_revenue
+                ).toLocaleString("en-IN")}`
+              : "-"
           }
-
         />
 
-
-
         <InfoCard
-
           title="Total Profit"
-
           value={
             dashboard
-            ?
-            `₹ ${Number(
-              dashboard.total_profit
-            ).toLocaleString("en-IN")}`
-            :
-            "-"
+              ? `₹ ${Number(
+                  dashboard.total_profit
+                ).toLocaleString("en-IN")}`
+              : "-"
           }
-
         />
 
-
-
         <InfoCard
-
           title="Top Revenue Company"
-
-          value={
-            topRevenue?.company_name || "-"
-          }
-
+          value={topRevenue?.company_name || "-"}
         />
 
-
-
         <InfoCard
-
           title="Top Profit Company"
-
-          value={
-            topProfit?.company_name || "-"
-          }
-
+          value={topProfit?.company_name || "-"}
         />
-
 
         <InfoCard
-
           title="Sector Distribution"
-
-          value={
-            `${sectorData.length} Sectors`
-          }
-
+          value={`${sectorData.length} Sectors`}
         />
-
 
       </div>
-
-
-
-
-
-
-
 
       {/* ================= CHARTS ================= */}
 
-
-
       <div
         style={{
-          display:"grid",
+          display: "grid",
           gridTemplateColumns:
-          "repeat(auto-fit,minmax(500px,1fr))",
-          gap:"25px",
-          marginTop:"40px"
+            "repeat(auto-fit,minmax(500px,1fr))",
+          gap: "25px",
+          marginTop: "40px",
         }}
       >
 
+        <DashboardChart dashboard={dashboard} />
 
-        <DashboardChart
-
-          dashboard={dashboard}
-
-        />
-
-
-        <SectorPieChart
-
-          sectorData={sectorData}
-
-        />
-
+        <SectorPieChart sectorData={sectorData} />
 
       </div>
-
-
-
-
-
-
-
 
       {/* ================= RANKINGS ================= */}
 
-
-
       <div
         style={{
-          display:"grid",
+          display: "grid",
           gridTemplateColumns:
-          "repeat(auto-fit,minmax(500px,1fr))",
-          gap:"25px",
-          marginTop:"40px"
+            "repeat(auto-fit,minmax(500px,1fr))",
+          gap: "25px",
+          marginTop: "40px",
         }}
       >
 
+        <RevenueRanking data={revenueRanking} />
 
-        <RevenueRanking
-
-          data={revenueRanking}
-
-        />
-
-
-        <ProfitRanking
-
-          data={profitRanking}
-
-        />
-
+        <ProfitRanking data={profitRanking} />
 
       </div>
 
-
-
-
-
-
-
       {/* ================= SECTOR ANALYTICS ================= */}
 
-
-
-      <SectorAnalytics
-
-        data={sectorData}
-
-      />
-
-
-
-
-
+      <SectorAnalytics data={sectorData} />
 
       {/* ================= ANALYTICS SUMMARY ================= */}
 
-
-
-      <AnalyticsOverview
-
-        dashboard={dashboard}
-
-      />
-
-
+      <AnalyticsOverview dashboard={dashboard} />
 
     </Layout>
 
@@ -611,37 +347,20 @@ function Dashboard() {
 
 }
 
-
-
-
-
-function InfoCard({
-  title,
-  value
-}) {
-
+function InfoCard({ title, value }) {
 
   return (
 
     <div className="card">
 
+      <h2>{title}</h2>
 
-      <h2>
-        {title}
-      </h2>
-
-
-      <h3>
-        {value}
-      </h3>
-
+      <h3>{value}</h3>
 
     </div>
 
   );
 
 }
-
-
 
 export default Dashboard;
