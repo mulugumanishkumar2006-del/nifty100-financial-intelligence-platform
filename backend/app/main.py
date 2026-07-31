@@ -19,6 +19,7 @@ from app.routers import (
     sectors,
     stock_prices,
     intelligence,
+    charts,   # NEW
 )
 
 from app.utils import CustomJSONEncoder, clean_value
@@ -174,6 +175,16 @@ app.include_router(
     tags=["AI Intelligence"],
 )
 
+# ==========================================================
+# Charts Router (NEW)
+# ==========================================================
+
+app.include_router(
+    charts.router,
+    prefix="/api",
+    tags=["Charts"],
+)
+
 
 # ==========================================================
 # Root Endpoint
@@ -221,5 +232,6 @@ def api_info():
             "Stock Prices",
             "Sector Analytics",
             "AI Intelligence",
+            "Charts",
         ],
     }

@@ -1,82 +1,67 @@
-import axios from "axios";
+// ==========================================
+// Revenue Trend
+// ==========================================
 
-const API = "http://127.0.0.1:8000/api";
-
-export const getRevenueRanking = async () => {
+export const getRevenueTrend = async (companyId) => {
   try {
     const response = await axios.get(
-      `${API}/analytics/revenue-ranking`
+      `${API}/analytics/revenue-trend/${companyId}`
     );
 
     return response.data;
   } catch (error) {
-    console.error("Revenue Ranking Error:", error);
+    console.error("Revenue Trend Error:", error);
     return [];
   }
 };
 
-export const getProfitRanking = async () => {
+// ==========================================
+// Profit Trend
+// ==========================================
+
+export const getProfitTrend = async (companyId) => {
   try {
     const response = await axios.get(
-      `${API}/analytics/profit-ranking`
+      `${API}/analytics/profit-trend/${companyId}`
     );
 
     return response.data;
   } catch (error) {
-    console.error("Profit Ranking Error:", error);
+    console.error("Profit Trend Error:", error);
     return [];
   }
 };
 
-export const getSectorAnalytics = async () => {
+// ==========================================
+// Market Cap
+// ==========================================
+
+export const getMarketCap = async (companyId) => {
   try {
     const response = await axios.get(
-      `${API}/analytics/sector-performance`
+      `${API}/companies/${companyId}`
     );
 
     return response.data;
   } catch (error) {
-    console.error("Sector Analytics Error:", error);
-    return [];
-  }
-};
-
-export const getCompanyComparison = async (
-  company1,
-  company2
-) => {
-  try {
-    const response = await axios.get(
-      `${API}/analytics/company-comparison`,
-      {
-        params: {
-          company1,
-          company2,
-        },
-      }
-    );
-
-    return response.data;
-  } catch (error) {
-    console.error("Comparison Error:", error);
+    console.error("Market Cap Error:", error);
     return null;
   }
 };
 
-export const getFinancialTrend = async (company) => {
+// ==========================================
+// Financial Ratios
+// ==========================================
+
+export const getFinancialRatios = async (companyId) => {
   try {
     const response = await axios.get(
-      `${API}/analytics/financial-trend`,
-      {
-        params: {
-          company,
-        },
-      }
+      `${API}/financial-ratios/${companyId}`
     );
 
     return response.data;
   } catch (error) {
-    console.error("Trend Error:", error);
-    return [];
+    console.error("Financial Ratios Error:", error);
+    return null;
   }
 };
