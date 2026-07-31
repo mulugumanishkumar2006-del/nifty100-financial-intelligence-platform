@@ -1,8 +1,16 @@
+"""
+Main Application
+
+NIFTY100 Financial Intelligence Platform
+"""
+
+import json
+import traceback
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import json
-import traceback
+from fastapi.exceptions import RequestValidationError
 
 from app.routers import (
     company,
@@ -16,9 +24,9 @@ from app.routers import (
 from app.utils import CustomJSONEncoder, clean_value
 
 
-# ==========================================
+# ==========================================================
 # Custom JSON Response
-# ==========================================
+# ==========================================================
 
 class APIJSONResponse(JSONResponse):
     def render(self, content):
@@ -32,21 +40,42 @@ class APIJSONResponse(JSONResponse):
         ).encode("utf-8")
 
 
-# ==========================================
+# ==========================================================
 # FastAPI App
-# ==========================================
+# ==========================================================
 
 app = FastAPI(
     title="NIFTY100 Financial Intelligence API",
+    description="AI Powered Financial Intelligence Platform for NIFTY100 Companies",
     version="1.0.0",
-    description="Financial Intelligence Platform for NIFTY100 Companies",
     default_response_class=APIJSONResponse,
+    contact={
+        "name": "Mulugu Maneesh Kumar",
+        "email": "your-email@example.com",
+    },
+    license_info={
+        "name": "MIT License",
+    },
 )
 
 
-# ==========================================
+# ==========================================================
+# Startup / Shutdown Events
+# ==========================================================
+
+@app.on_event("startup")
+async def startup_event():
+    print("✅ NIFTY100 Financial Intelligence API Started")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    print("🛑 API Shutdown")
+
+
+# ==========================================================
 # CORS
-# ==========================================
+# ==========================================================
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,14 +86,35 @@ app.add_middleware(
 )
 
 
-# ==========================================
+# ==========================================================
+# Validation Error Handler
+# ==========================================================
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request,
+    exc: RequestValidationError,
+):
+    return APIJSONResponse(
+        status_code=422,
+        content={
+            "error": "Validation Error",
+            "details": exc.errors(),
+        },
+    )
+
+
+# ==========================================================
 # Global Exception Handler
-# ==========================================
+# ==========================================================
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
+async def global_exception_handler(
+    request: Request,
+    exc: Exception,
+):
 
-    error_detail = {
+    error = {
         "error": str(exc),
         "type": exc.__class__.__name__,
         "path": request.url.path,
@@ -72,19 +122,21 @@ async def global_exception_handler(request: Request, exc: Exception):
     }
 
     try:
-        error_detail["traceback"] = traceback.format_exc()
+        error["traceback"] = traceback.format_exc()
     except Exception:
         pass
 
     return APIJSONResponse(
         status_code=500,
-        content={"detail": error_detail},
+        content={
+            "detail": error
+        },
     )
 
 
-# ==========================================
-# Routers
-# ==========================================
+# ==========================================================
+# Register Routers
+# ==========================================================
 
 app.include_router(
     company.router,
@@ -119,31 +171,55 @@ app.include_router(
 app.include_router(
     intelligence.router,
     prefix="/api",
-    tags=["Intelligence"],
+    tags=["AI Intelligence"],
 )
 
 
-# ==========================================
+# ==========================================================
 # Root Endpoint
-# ==========================================
+# ==========================================================
 
 @app.get("/")
 def home():
     return {
-        "message": "NIFTY100 Financial Intelligence API",
+        "project": "NIFTY100 Financial Intelligence Platform",
         "version": "1.0.0",
         "status": "Running",
         "documentation": "/docs",
+        "health": "/health",
     }
 
 
-# ==========================================
+# ==========================================================
 # Health Check
-# ==========================================
+# ==========================================================
 
 @app.get("/health")
 def health():
     return {
         "status": "healthy",
-        "service": "NIFTY100 Financial Intelligence API",
+        "api": "NIFTY100 Financial Intelligence API",
+        "version": "1.0.0",
+    }
+
+
+# ==========================================================
+# API Information
+# ==========================================================
+
+@app.get("/api-info")
+def api_info():
+
+    return {
+        "backend": "FastAPI",
+        "database": "SQLite",
+        "frontend": "React",
+        "modules": [
+            "Dashboard",
+            "Companies",
+            "Financial Ratios",
+            "Stock Prices",
+            "Sector Analytics",
+            "AI Intelligence",
+        ],
     }

@@ -8,32 +8,28 @@ import FinancialRatios from "./pages/FinancialRatios";
 import StockPrices from "./pages/StockPrices";
 import StockScreener from "./pages/StockScreener";
 import CompareCompanies from "./pages/CompareCompanies";
+import Intelligence from "./pages/Intelligence";
+
 function App() {
-
   return (
-
     <Routes>
-
       {/* Dashboard */}
       <Route
         path="/"
         element={<Dashboard />}
       />
 
-
-      {/* Companies List */}
+      {/* Companies */}
       <Route
         path="/companies"
         element={<Companies />}
       />
 
-
-      {/* Single Company Details */}
+      {/* Company Details */}
       <Route
         path="/company/:id"
         element={<CompanyDetails />}
       />
-
 
       {/* Analytics */}
       <Route
@@ -41,13 +37,11 @@ function App() {
         element={<Analytics />}
       />
 
-
       {/* Financial Ratios */}
       <Route
         path="/financial-ratios"
         element={<FinancialRatios />}
       />
-
 
       {/* Stock Prices */}
       <Route
@@ -55,8 +49,25 @@ function App() {
         element={<StockPrices />}
       />
 
+      {/* Stock Screener */}
+      <Route
+        path="/stock-screener"
+        element={<StockScreener />}
+      />
 
-      {/* Unknown Routes */}
+      {/* Compare Companies */}
+      <Route
+        path="/compare"
+        element={<CompareCompanies />}
+      />
+
+      {/* AI Intelligence */}
+      <Route
+        path="/intelligence"
+        element={<Intelligence />}
+      />
+
+      {/* 404 Redirect */}
       <Route
         path="*"
         element={
@@ -66,20 +77,8 @@ function App() {
           />
         }
       />
-      <Route
-  path="/stock-screener"
-  element={<StockScreener />}
-/>
-<Route
-  path="/compare"
-  element={<CompareCompanies />}
-/>
     </Routes>
-    
-
   );
-
 }
-
 
 export default App;

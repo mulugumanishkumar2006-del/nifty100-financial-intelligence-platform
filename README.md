@@ -332,13 +332,7 @@ GET /api/dashboard
 🔜 Planned
 
 ---
-
-# 📷 Screenshots
-
-> Add screenshots here after completing the UI.
-
-Example:
-
+#
 ```
 Dashboard
 
@@ -395,8 +389,7 @@ Sir Padampat Singhania University
 GitHub:
 https://github.com/mulugumanishkumar2006-del
 
-LinkedIn:
-(Add your LinkedIn URL)
+
 
 ---
 
