@@ -57,9 +57,10 @@ import {
   getStockHistory,
 } from "../services/chartService";
 
-import PriceChart from "../charts/PriceChart";
-import PriceLineChart from "../charts/PriceLineChart";
-import VolumeBarChart from "../charts/VolumeBarChart";
+// NAMED IMPORTS FROM src/components/charts/
+import PriceChart from "../components/charts/PriceChart";
+import PriceLineChart from "../components/charts/PriceLineChart";
+import VolumeBarChart from "../components/charts/VolumeBarChart";
 
 import { getCompanies } from "../services/companyService";
 
@@ -79,7 +80,7 @@ function Dashboard() {
   const [revenueRanking, setRevenueRanking] = useState([]);
   const [profitRanking, setProfitRanking] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Error State
   const [error, setError] = useState(null);
 
@@ -94,23 +95,26 @@ function Dashboard() {
   const [marketCapData, setMarketCapData] = useState([]);
   const [stockHistory, setStockHistory] = useState([]);
 
-  // Step 10.1 – Optimized loadDashboard() using Promise.all()
+  // Load Initial Dashboard Data
   useEffect(() => {
     async function loadDashboard() {
       try {
         setLoading(true);
         setError(null);
 
-        // Backend health check
-        const response = await fetch("http://127.0.0.1:8000/");
+        // Backend health check with fallback error throw
+        const response = await fetch("http://127.0.0.1:8000/").catch(() => {
+          throw new Error("Unable to connect to backend server at http://127.0.0.1:8000/.");
+        });
+
         if (!response.ok) {
-          throw new Error("Unable to connect to backend service.");
+          throw new Error("Backend server returned an invalid response.");
         }
 
         const apiData = await response.json();
         setApi(apiData);
 
-        // Fetch all independent APIs in parallel for optimal load times
+        // Fetch independent APIs in parallel
         const [
           dashboardData,
           yearData,
@@ -137,14 +141,13 @@ function Dashboard() {
         setRevenueRanking(revenueRank || []);
         setProfitRanking(profitRank || []);
 
-        // Load Company List
-        const companyList = await getCompanies();
+        // Load Company List safely
+        const companyList = await getCompanies().catch(() => []);
         setCompanies(companyList || []);
         if (companyList && companyList.length > 0) {
           setSelectedCompany(companyList[0].id);
         }
 
-        // Safe fallbacks using loaded dashboard data
         setSectorSummary(sector || []);
         setFinancialRatios([]);
       } catch (err) {
@@ -158,7 +161,7 @@ function Dashboard() {
     loadDashboard();
   }, []);
 
-  // loadCharts Function
+  // Dynamic Chart Data Fetcher
   async function loadCharts(companyId) {
     try {
       const revenue = await getRevenueTrend(companyId);
@@ -173,27 +176,27 @@ function Dashboard() {
     }
   }
 
-  // Load charts dynamically on selectedCompany change
+  // Reload charts when selected company changes
   useEffect(() => {
     if (selectedCompany) {
       loadCharts(selectedCompany);
     }
   }, [selectedCompany]);
 
-  // Auto Refresh (5 Minutes)
+  // Auto Refresh Every 5 Minutes
   useEffect(() => {
     const interval = setInterval(() => {
       window.location.reload();
-    }, 300000); // 5 minutes
+    }, 300000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Calculate stats
+  // Stat Calculations
   const averageROE = dashboard?.average_roe ?? 0;
   const totalMarketCap = "₹ --";
 
-  // Handle Loading State
+  // Loading Screen
   if (loading) {
     return (
       <Layout>
@@ -203,7 +206,7 @@ function Dashboard() {
     );
   }
 
-  // Handle Error State
+  // Error Screen
   if (error) {
     return (
       <Layout>
@@ -220,7 +223,6 @@ function Dashboard() {
     <Layout>
       <Header />
 
-      {/* Dashboard Container */}
       <div
         style={{
           padding: "25px",

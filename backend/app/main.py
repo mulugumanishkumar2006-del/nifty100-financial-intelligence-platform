@@ -235,3 +235,10 @@ def api_info():
             "Charts",
         ],
     }
+@app.get("/api/analytics/revenue-ranking")
+def get_revenue_ranking():
+    return [...]
+
+@app.get("/api/analytics/profit-ranking")
+def get_profit_ranking():
+    return [...]

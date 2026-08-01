@@ -9,10 +9,12 @@ import StockPrices from "./pages/StockPrices";
 import StockScreener from "./pages/StockScreener";
 import CompareCompanies from "./pages/CompareCompanies";
 import Intelligence from "./pages/Intelligence";
+import Portfolio from "./pages/Portfolio";
 
 function App() {
   return (
     <Routes>
+
       {/* Dashboard */}
       <Route
         path="/"
@@ -67,6 +69,12 @@ function App() {
         element={<Intelligence />}
       />
 
+      {/* Portfolio */}
+      <Route
+        path="/portfolio"
+        element={<Portfolio />}
+      />
+
       {/* 404 Redirect */}
       <Route
         path="*"
@@ -77,6 +85,7 @@ function App() {
           />
         }
       />
+
     </Routes>
   );
 }
