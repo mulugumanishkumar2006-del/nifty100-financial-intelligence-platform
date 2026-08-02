@@ -1,34 +1,57 @@
+"""
+Create SQLite Database
+
+NIFTY100 Financial Intelligence Platform
+"""
+
 import sqlite3
 from pathlib import Path
 
 
+# ==========================================================
+# Project Paths
+# ==========================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+
+DATABASE = PROJECT_ROOT / "nifty100.db"
+SCHEMA = PROJECT_ROOT / "schema.sql"
+
+
+# ==========================================================
+# Create Database
+# ==========================================================
+
 def create_database():
-    # Project root
-    project_root = Path(__file__).resolve().parent
 
-    db_path = project_root / "nifty100.db"
-    schema_path = project_root / "schema.sql"
+    print("=" * 60)
+    print("Creating NIFTY100 SQLite Database")
+    print("=" * 60)
 
-    print("=" * 50)
-    print("Creating SQLite Database...")
-    print("=" * 50)
+    if not SCHEMA.exists():
+        raise FileNotFoundError(f"Schema file not found:\n{SCHEMA}")
 
-    conn = sqlite3.connect(db_path)
+    connection = sqlite3.connect(DATABASE)
 
     # Enable Foreign Keys
-    conn.execute("PRAGMA foreign_keys = ON;")
+    connection.execute("PRAGMA foreign_keys = ON;")
 
-    with open(schema_path, "r", encoding="utf-8") as f:
-        schema = f.read()
+    with open(SCHEMA, "r", encoding="utf-8") as file:
+        sql = file.read()
 
-    conn.executescript(schema)
+    connection.executescript(sql)
 
-    conn.commit()
-    conn.close()
+    connection.commit()
+    connection.close()
 
     print("✅ Database Created Successfully")
-    print(f"📁 Location : {db_path}")
+    print(f"📂 Database : {DATABASE}")
+    print(f"📄 Schema   : {SCHEMA}")
 
+
+# ==========================================================
+# Main
+# ==========================================================
 
 if __name__ == "__main__":
     create_database()

@@ -13,7 +13,6 @@ import pandas as pd
 # ==========================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-
 DATABASE = PROJECT_ROOT / "database" / "nifty100.db"
 
 
@@ -22,20 +21,17 @@ def get_connection():
 
 
 # ==========================================================
-# Fetch Company Financial Data
+# Latest Financial Ratio
 # ==========================================================
 
 def get_company_financial_data(company_id: str):
-    """
-    Fetch latest financial ratios for a company.
-    """
 
     connection = get_connection()
 
     query = """
     SELECT *
     FROM financial_ratios
-    WHERE company_id = ?
+    WHERE company_id=?
     ORDER BY year DESC
     LIMIT 1
     """
@@ -43,7 +39,7 @@ def get_company_financial_data(company_id: str):
     dataframe = pd.read_sql_query(
         query,
         connection,
-        params=(company_id,),
+        params=(company_id,)
     )
 
     connection.close()
@@ -55,7 +51,7 @@ def get_company_financial_data(company_id: str):
 
 
 # ==========================================================
-# Calculate Health Score
+# Health Score
 # ==========================================================
 
 def calculate_health_score(company_id: str):
@@ -66,16 +62,16 @@ def calculate_health_score(company_id: str):
         return {
             "company_id": company_id,
             "health_score": 0,
-            "grade": "Unknown",
+            "grade": "Unknown"
         }
 
     score = 0
 
-    roe = float(data.get("roe", 0) or 0)
-    roce = float(data.get("roce", 0) or 0)
-    current_ratio = float(data.get("current_ratio", 0) or 0)
-    debt_equity = float(data.get("debt_to_equity", 0) or 0)
-    pe_ratio = float(data.get("pe_ratio", 0) or 0)
+    roe = float(data.get("return_on_equity_pct") or 0)
+    debt = float(data.get("debt_to_equity") or 0)
+    interest = float(data.get("interest_coverage") or 0)
+    margin = float(data.get("net_profit_margin_pct") or 0)
+    asset = float(data.get("asset_turnover") or 0)
 
     # ROE
     if roe >= 20:
@@ -85,35 +81,38 @@ def calculate_health_score(company_id: str):
     elif roe >= 10:
         score += 10
 
-    # ROCE
-    if roce >= 20:
+    # Debt
+    if debt <= 0.5:
         score += 20
-    elif roce >= 15:
+    elif debt <= 1:
         score += 15
-    elif roce >= 10:
+    elif debt <= 2:
         score += 10
 
-    # Current Ratio
-    if current_ratio >= 2:
+    # Interest Coverage
+    if interest >= 10:
         score += 20
-    elif current_ratio >= 1:
+    elif interest >= 5:
         score += 15
-
-    # Debt to Equity
-    if debt_equity <= 0.5:
-        score += 20
-    elif debt_equity <= 1:
-        score += 15
-    elif debt_equity <= 2:
+    elif interest >= 2:
         score += 10
 
-    # PE Ratio
-    if pe_ratio <= 25:
+    # Net Profit Margin
+    if margin >= 20:
         score += 20
-    elif pe_ratio <= 40:
+    elif margin >= 10:
         score += 15
+    elif margin >= 5:
+        score += 10
 
-    # Grade
+    # Asset Turnover
+    if asset >= 2:
+        score += 20
+    elif asset >= 1:
+        score += 15
+    elif asset >= 0.5:
+        score += 10
+
     if score >= 80:
         grade = "Excellent"
     elif score >= 60:
@@ -131,7 +130,7 @@ def calculate_health_score(company_id: str):
 
 
 # ==========================================================
-# Investment Recommendation
+# Recommendation
 # ==========================================================
 
 def investment_recommendation(company_id: str):
@@ -166,26 +165,20 @@ def ai_summary(company_id: str):
 
     if score >= 80:
         summary = (
-            "This company demonstrates excellent financial health with strong profitability, "
-            "healthy return ratios, manageable debt levels and appears suitable for long-term investment."
+            "The company has excellent financial strength with healthy profitability, "
+            "strong returns and manageable debt."
         )
-
     elif score >= 60:
         summary = (
-            "This company has stable financial performance with moderate growth potential. "
-            "Investors may consider holding while monitoring future results."
+            "The company shows good financial performance with stable fundamentals."
         )
-
     elif score >= 40:
         summary = (
-            "The company has average financial strength. Additional analysis is recommended "
-            "before making an investment decision."
+            "The company has average financial health. Investors should perform additional analysis."
         )
-
     else:
         summary = (
-            "The company shows weak financial indicators and higher investment risk. "
-            "Careful evaluation is recommended."
+            "The company has weak financial indicators and higher investment risk."
         )
 
     risk = (

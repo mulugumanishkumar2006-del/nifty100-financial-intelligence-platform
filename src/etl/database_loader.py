@@ -46,14 +46,31 @@ HEADER_ROW = {
 }
 
 # ==========================================================
+# Column Mapping
+# ==========================================================
+
+COLUMN_MAPPING = {
+
+    # Profit & Loss
+    "dividend": "dividend_payout",
+
+    # Cash Flow
+    "operating_cash_flow": "operating_activity",
+    "investing_cash_flow": "investing_activity",
+    "financing_cash_flow": "financing_activity",
+
+    # Financial Ratios
+    "roe": "return_on_equity_pct",
+    "net_profit_margin": "net_profit_margin_pct",
+    "operating_profit_margin": "operating_profit_margin_pct",
+    "dividend_payout_ratio": "dividend_payout_ratio_pct",
+}
+
+# ==========================================================
 # Connect Database
 # ==========================================================
 
 connection = sqlite3.connect(DATABASE)
-
-# ==========================================================
-# Clear Existing Data
-# ==========================================================
 
 print("=" * 60)
 print("Clearing Existing Tables")
@@ -64,7 +81,7 @@ for table in FILE_MAPPING.values():
 
 connection.commit()
 
-print("✅ Existing data cleared.\n")
+print("✅ Existing data cleared\n")
 
 # ==========================================================
 # Load Excel Files
@@ -83,18 +100,14 @@ for excel_file, table_name in FILE_MAPPING.items():
 
     try:
 
-        # -----------------------------------
-        # Read Excel
-        # -----------------------------------
-
         df = pd.read_excel(
             file_path,
             header=HEADER_ROW[excel_file]
         )
 
-        # -----------------------------------
+        # --------------------------------------------------
         # Normalize Columns
-        # -----------------------------------
+        # --------------------------------------------------
 
         df.columns = (
             df.columns.astype(str)
@@ -102,11 +115,19 @@ for excel_file, table_name in FILE_MAPPING.items():
             .str.lower()
             .str.replace(" ", "_", regex=False)
             .str.replace("-", "_", regex=False)
+            .str.replace("%", "_pct", regex=False)
+            .str.replace("/", "_", regex=False)
         )
 
-        # -----------------------------------
-        # Read Database Schema
-        # -----------------------------------
+        # --------------------------------------------------
+        # Rename Columns
+        # --------------------------------------------------
+
+        df.rename(columns=COLUMN_MAPPING, inplace=True)
+
+        # --------------------------------------------------
+        # Database Columns
+        # --------------------------------------------------
 
         cursor = connection.execute(
             f"PRAGMA table_info({table_name})"
@@ -114,25 +135,15 @@ for excel_file, table_name in FILE_MAPPING.items():
 
         db_columns = [row[1] for row in cursor.fetchall()]
 
-        # -----------------------------------
-        # Match Columns
-        # -----------------------------------
-
         matching_columns = [
-            col for col in df.columns
-            if col in db_columns
+            c for c in df.columns
+            if c in db_columns
         ]
 
         skipped_columns = [
-            col for col in df.columns
-            if col not in db_columns
+            c for c in df.columns
+            if c not in db_columns
         ]
-
-        print("\nDatabase Columns:")
-        print(db_columns)
-
-        print("\nExcel Columns:")
-        print(df.columns.tolist())
 
         print("\nMatching Columns:")
         print(matching_columns)
@@ -141,35 +152,23 @@ for excel_file, table_name in FILE_MAPPING.items():
             print("\nSkipped Columns:")
             print(skipped_columns)
 
-        # -----------------------------------
-        # Keep Matching Columns
-        # -----------------------------------
-
         df = df[matching_columns]
 
-        print(f"\nRows Ready For Insert : {len(df)}")
-
-        # -----------------------------------
-        # Insert
-        # -----------------------------------
+        print(f"\nRows : {len(df)}")
 
         df.to_sql(
             table_name,
             connection,
             if_exists="append",
-            index=False
+            index=False,
         )
 
-        print(f"✅ Inserted {len(df)} rows into {table_name}")
+        print(f"✅ Loaded {len(df)} rows into {table_name}")
 
     except Exception as e:
 
-        print(f"\n❌ Error while loading {excel_file}")
+        print(f"\n❌ Error in {excel_file}")
         print(e)
-
-# ==========================================================
-# Close Database
-# ==========================================================
 
 connection.commit()
 connection.close()

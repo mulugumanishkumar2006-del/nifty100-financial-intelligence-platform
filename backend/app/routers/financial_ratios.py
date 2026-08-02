@@ -4,33 +4,27 @@ Financial Ratios Router
 NIFTY100 Financial Intelligence Platform
 """
 
-from fastapi import APIRouter
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 
 from app.services.ratio_service import (
     get_latest_ratios,
     get_company_ratios,
     latest_year,
     top_roe,
-    top_asset_turnover
+    top_asset_turnover,
 )
 
 router = APIRouter(
     prefix="/financial-ratios",
-    tags=["Financial Ratios"]
+    tags=["Financial Ratios"],
 )
-
 
 # ==========================================================
 # Get All Financial Ratios
 # ==========================================================
 
-@router.get(
-    "/",
-    summary="Get Financial Ratios"
-)
+@router.get("/", summary="Get Financial Ratios")
 def fetch_ratios():
-
     return get_latest_ratios()
 
 
@@ -40,20 +34,16 @@ def fetch_ratios():
 
 @router.get(
     "/company/{company_id}",
-    summary="Get Company Financial Ratios"
+    summary="Get Company Financial Ratios",
 )
-def fetch_company_ratios(company_id: int):
+def fetch_company_ratios(company_id: str):
 
     data = get_company_ratios(company_id)
 
-    if len(data) == 0:
-
+    if not data:
         raise HTTPException(
-
             status_code=404,
-
-            detail="Financial ratios not found"
-
+            detail="Financial ratios not found",
         )
 
     return data
@@ -65,14 +55,11 @@ def fetch_company_ratios(company_id: int):
 
 @router.get(
     "/latest-year",
-    summary="Latest Financial Year"
+    summary="Latest Financial Year",
 )
 def fetch_latest_year():
-
     return {
-
         "latest_year": latest_year()
-
     }
 
 
@@ -82,10 +69,9 @@ def fetch_latest_year():
 
 @router.get(
     "/top-roe",
-    summary="Top ROE Companies"
+    summary="Top ROE Companies",
 )
 def fetch_top_roe(limit: int = 10):
-
     return top_roe(limit)
 
 
@@ -95,8 +81,7 @@ def fetch_top_roe(limit: int = 10):
 
 @router.get(
     "/top-asset-turnover",
-    summary="Top Asset Turnover Companies"
+    summary="Top Asset Turnover Companies",
 )
 def fetch_top_asset_turnover(limit: int = 10):
-
     return top_asset_turnover(limit)

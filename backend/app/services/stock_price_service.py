@@ -6,6 +6,7 @@ NIFTY100 Financial Intelligence Platform
 
 import sqlite3
 from pathlib import Path
+
 import pandas as pd
 from app.utils import dataframe_to_records
 
@@ -28,36 +29,37 @@ def get_connection():
 # ==========================================================
 
 def latest_prices(limit: int = 100):
+
     connection = get_connection()
 
     query = """
     SELECT
         sp.id,
-        c.company_name,
         sp.company_id,
+        c.company_name,
 
         sp.date,
 
         sp.open_price,
+        sp.high_price,
+        sp.low_price,
+        sp.close_price,
+
+        sp.adjusted_close,
+        sp.volume,
 
         sp.high_price AS high_52,
-
         sp.low_price AS low_52,
 
         sp.close_price AS current_price,
-
         sp.close_price AS price,
 
-        0 AS change_percentage,
-
-        sp.volume,
-
-        sp.adjusted_close
+        0 AS change_percentage
 
     FROM stock_prices sp
 
-    JOIN companies c
-    ON sp.company_id = c.id
+    INNER JOIN companies c
+        ON sp.company_id = c.id
 
     ORDER BY sp.date DESC
 
@@ -67,7 +69,7 @@ def latest_prices(limit: int = 100):
     dataframe = pd.read_sql_query(
         query,
         connection,
-        params=(limit,)
+        params=(limit,),
     )
 
     connection.close()
@@ -79,23 +81,36 @@ def latest_prices(limit: int = 100):
 # Company Price History
 # ==========================================================
 
-def company_price_history(company_id: int):
+def company_price_history(company_id: str):
+
     connection = get_connection()
 
     query = """
-    SELECT *
+    SELECT
+
+        date,
+        open_price,
+        high_price,
+        low_price,
+        close_price,
+        adjusted_close,
+        volume
+
     FROM stock_prices
+
     WHERE company_id = ?
+
     ORDER BY date DESC
     """
 
     dataframe = pd.read_sql_query(
         query,
         connection,
-        params=(company_id,)
+        params=(company_id,),
     )
 
     connection.close()
+
     return dataframe_to_records(dataframe)
 
 
@@ -103,21 +118,34 @@ def company_price_history(company_id: int):
 # Latest Price
 # ==========================================================
 
-def latest_price(company_id: int):
+def latest_price(company_id: str):
+
     connection = get_connection()
 
     query = """
-    SELECT *
+    SELECT
+
+        date,
+        open_price,
+        high_price,
+        low_price,
+        close_price,
+        adjusted_close,
+        volume
+
     FROM stock_prices
+
     WHERE company_id = ?
+
     ORDER BY date DESC
+
     LIMIT 1
     """
 
     dataframe = pd.read_sql_query(
         query,
         connection,
-        params=(company_id,)
+        params=(company_id,),
     )
 
     connection.close()
@@ -125,19 +153,19 @@ def latest_price(company_id: int):
     if dataframe.empty:
         return {}
 
-    records = dataframe_to_records(dataframe)
-    return records[0] if records else {}
+    return dataframe_to_records(dataframe)[0]
 
 
 # ==========================================================
-# Total Records
+# Total Stock Records
 # ==========================================================
 
 def total_stock_records():
+
     connection = get_connection()
 
     query = """
-    SELECT COUNT(*) total
+    SELECT COUNT(*) AS total
     FROM stock_prices
     """
 

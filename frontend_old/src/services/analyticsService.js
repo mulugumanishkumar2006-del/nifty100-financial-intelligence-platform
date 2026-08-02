@@ -2,102 +2,136 @@ import axios from "axios";
 
 const API = "http://127.0.0.1:8000/api";
 
-// ==========================================
-// Rankings (Required by Dashboard)
-// ==========================================
+// ======================================================
+// Dashboard Summary
+// ======================================================
+
+export const getDashboard = async () => {
+  try {
+    const { data } = await axios.get(`${API}/dashboard`);
+    return data;
+  } catch (err) {
+    console.error("Dashboard Error:", err);
+    return {};
+  }
+};
+
+// ======================================================
+// Revenue Ranking
+// ======================================================
 
 export const getRevenueRanking = async () => {
   try {
-    const response = await axios.get(`${API}/analytics/revenue-ranking`);
-    return response.data;
-  } catch (error) {
-    console.error("Revenue Ranking Error:", error);
+    const { data } = await axios.get(`${API}/revenue-ranking`);
+    return data;
+  } catch (err) {
+    console.error("Revenue Ranking Error:", err);
     return [];
   }
 };
+
+// ======================================================
+// Profit Ranking
+// ======================================================
 
 export const getProfitRanking = async () => {
   try {
-    const response = await axios.get(`${API}/analytics/profit-ranking`);
-    return response.data;
-  } catch (error) {
-    console.error("Profit Ranking Error:", error);
+    const { data } = await axios.get(`${API}/profit-ranking`);
+    return data;
+  } catch (err) {
+    console.error("Profit Ranking Error:", err);
     return [];
   }
 };
 
-// ==========================================
-// Revenue & Profit Trends
-// ==========================================
+// ======================================================
+// Sector Distribution
+// ======================================================
+
+export const getSectorDistribution = async () => {
+  try {
+    const { data } = await axios.get(`${API}/sector-distribution`);
+    return data;
+  } catch (err) {
+    console.error("Sector Distribution Error:", err);
+    return [];
+  }
+};
+
+// ======================================================
+// Company Analytics
+// ======================================================
+
+export const getCompanyAnalytics = async (companyId) => {
+  try {
+    const { data } = await axios.get(`${API}/company/${companyId}`);
+    return data;
+  } catch (err) {
+    console.error("Company Analytics Error:", err);
+    return null;
+  }
+};
+
+// ======================================================
+// Revenue Trend Chart
+// ======================================================
 
 export const getRevenueTrend = async (companyId) => {
   try {
-    const response = await axios.get(
-      `${API}/analytics/revenue-trend/${companyId}`
+    const { data } = await axios.get(
+      `${API}/charts/revenue/${companyId}`
     );
-    return response.data;
-  } catch (error) {
-    console.error("Revenue Trend Error:", error);
+    return data;
+  } catch (err) {
+    console.error("Revenue Trend Error:", err);
     return [];
   }
 };
 
-export const getProfitTrend = async (companyId) => {
+// ======================================================
+// ROE Trend Chart
+// ======================================================
+
+export const getROETrend = async (companyId) => {
   try {
-    const response = await axios.get(
-      `${API}/analytics/profit-trend/${companyId}`
+    const { data } = await axios.get(
+      `${API}/charts/roe/${companyId}`
     );
-    return response.data;
-  } catch (error) {
-    console.error("Profit Trend Error:", error);
+    return data;
+  } catch (err) {
+    console.error("ROE Trend Error:", err);
     return [];
   }
 };
 
-// ==========================================
+// ======================================================
+// Market Cap Chart
+// ======================================================
+
+export const getMarketCap = async () => {
+  try {
+    const { data } = await axios.get(
+      `${API}/charts/market-cap`
+    );
+    return data;
+  } catch (err) {
+    console.error("Market Cap Error:", err);
+    return [];
+  }
+};
+
+// ======================================================
 // Stock History
-// ==========================================
+// ======================================================
 
 export const getStockHistory = async (companyId) => {
   try {
-    const response = await axios.get(
-      `${API}/stock-history/${companyId}`
+    const { data } = await axios.get(
+      `${API}/charts/stock-history/${companyId}`
     );
-    return response.data;
-  } catch (error) {
-    console.error("Stock History Error:", error);
+    return data;
+  } catch (err) {
+    console.error("Stock History Error:", err);
     return [];
-  }
-};
-
-// ==========================================
-// Market Cap
-// ==========================================
-
-export const getMarketCap = async (companyId) => {
-  try {
-    const response = await axios.get(
-      `${API}/companies/${companyId}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Market Cap Error:", error);
-    return null;
-  }
-};
-
-// ==========================================
-// Financial Ratios
-// ==========================================
-
-export const getFinancialRatios = async (companyId) => {
-  try {
-    const response = await axios.get(
-      `${API}/financial-ratios/${companyId}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Financial Ratios Error:", error);
-    return null;
   }
 };

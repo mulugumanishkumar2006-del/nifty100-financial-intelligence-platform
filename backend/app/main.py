@@ -19,7 +19,7 @@ from app.routers import (
     sectors,
     stock_prices,
     intelligence,
-    charts,   # NEW
+    charts,
 )
 
 from app.utils import CustomJSONEncoder, clean_value
@@ -61,7 +61,23 @@ app = FastAPI(
 
 
 # ==========================================================
-# Startup / Shutdown Events
+# CORS
+# ==========================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ==========================================================
+# Startup / Shutdown
 # ==========================================================
 
 @app.on_event("startup")
@@ -72,19 +88,6 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     print("🛑 API Shutdown")
-
-
-# ==========================================================
-# CORS
-# ==========================================================
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 # ==========================================================
@@ -114,7 +117,6 @@ async def global_exception_handler(
     request: Request,
     exc: Exception,
 ):
-
     error = {
         "error": str(exc),
         "type": exc.__class__.__name__,
@@ -175,10 +177,6 @@ app.include_router(
     tags=["AI Intelligence"],
 )
 
-# ==========================================================
-# Charts Router (NEW)
-# ==========================================================
-
 app.include_router(
     charts.router,
     prefix="/api",
@@ -220,7 +218,6 @@ def health():
 
 @app.get("/api-info")
 def api_info():
-
     return {
         "backend": "FastAPI",
         "database": "SQLite",
@@ -235,10 +232,3 @@ def api_info():
             "Charts",
         ],
     }
-@app.get("/api/analytics/revenue-ranking")
-def get_revenue_ranking():
-    return [...]
-
-@app.get("/api/analytics/profit-ranking")
-def get_profit_ranking():
-    return [...]
