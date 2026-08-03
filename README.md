@@ -164,7 +164,7 @@ NIFTY100-Financial-Intelligence/
 ## Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/nifty100-financial-intelligence.git
+git clone https://github.com/mulugumanishkumar2006-del/nifty100-financial-intelligence-platform/.git
 ```
 
 ---
