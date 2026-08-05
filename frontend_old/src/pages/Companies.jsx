@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import Layout from "../components/Layout";
 import CompanyTable from "../components/CompanyTable";
+import CompanyFilters from "../components/company/CompanyFilters";
 
 import { getCompanies } from "../services/companyService";
 
 function Companies() {
   const [companies, setCompanies] = useState([]);
+  const [filteredCompanies, setFilteredCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function fetchCompanies() {
@@ -17,7 +18,9 @@ function Companies() {
 
         console.log("Companies:", data);
 
-        setCompanies(data || []);
+        const companyList = data || [];
+        setCompanies(companyList);
+        setFilteredCompanies(companyList);
       } catch (error) {
         console.error("Error fetching companies:", error);
       } finally {
@@ -27,21 +30,6 @@ function Companies() {
 
     fetchCompanies();
   }, []);
-
-  const filteredCompanies = useMemo(() => {
-    if (!search.trim()) return companies;
-
-    return companies.filter((company) => {
-      const name =
-        company.company_name ||
-        company.name ||
-        "";
-
-      return name
-        .toLowerCase()
-        .includes(search.toLowerCase());
-    });
-  }, [companies, search]);
 
   return (
     <Layout>
@@ -70,27 +58,14 @@ function Companies() {
             marginBottom: "25px",
           }}
         >
-          Browse, search and analyze all companies available in the
-          NIFTY100 Financial Intelligence Platform.
+          Browse, search and analyze all companies available in the NIFTY100
+          Financial Intelligence Platform.
         </p>
 
-        {/* Search Box */}
-
-        <input
-          type="text"
-          placeholder="🔍 Search company..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            width: "100%",
-            maxWidth: "450px",
-            padding: "14px 18px",
-            borderRadius: "10px",
-            border: "1px solid #d1d5db",
-            fontSize: "15px",
-            outline: "none",
-            marginBottom: "20px",
-          }}
+        {/* Filters and Search Component */}
+        <CompanyFilters
+          companies={companies}
+          onFilter={setFilteredCompanies}
         />
 
         {/* Statistics */}
@@ -100,6 +75,7 @@ function Companies() {
             display: "flex",
             gap: "20px",
             flexWrap: "wrap",
+            marginTop: "20px",
           }}
         >
           <div

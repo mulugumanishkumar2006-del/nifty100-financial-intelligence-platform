@@ -20,7 +20,7 @@ import RevenueChart from "../components/company/RevenueChart";
 import ProfitChart from "../components/company/ProfitChart";
 
 import PeerComparison from "../components/company/PeerComparison";
-
+import AIInsights from "../components/company/AIInsights";
 import { getCompany } from "../services/companyService";
 import CompanyComparison from "../components/company/CompanyComparison";
 function CompanyDetails() {
@@ -127,6 +127,10 @@ function CompanyDetails() {
       <FinancialRatios
         company={company.company}
       />
+      <AIInsights company={company.company} />
+      <CompanyComparison
+    company={company.company}
+/>
 
       {/* ================= Peer Comparison ================= */}
 

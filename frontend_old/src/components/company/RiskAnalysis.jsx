@@ -1,290 +1,211 @@
 function RiskAnalysis({ company }) {
+  const profitLoss = company?.profit_loss || [];
+  const balanceSheet = company?.balance_sheet || [];
+  const cashFlow = company?.cash_flow || [];
 
+  // =====================================
+  // Sort Data by Year
+  // =====================================
 
-  const profitLoss =
-    company?.profit_loss || [];
+  const sortedProfit = [...profitLoss].sort(
+    (a, b) => Number(a.year) - Number(b.year)
+  );
 
+  const sortedBalance = [...balanceSheet].sort(
+    (a, b) => Number(a.year) - Number(b.year)
+  );
 
-  const balanceSheet =
-    company?.balance_sheet || [];
+  const sortedCashFlow = [...cashFlow].sort(
+    (a, b) => Number(a.year) - Number(b.year)
+  );
 
+  const latestBalance =
+    sortedBalance.length > 0
+      ? sortedBalance[sortedBalance.length - 1]
+      : null;
 
-  const cashFlow =
-    company?.cash_flow || [];
+  const latestCashFlow =
+    sortedCashFlow.length > 0
+      ? sortedCashFlow[sortedCashFlow.length - 1]
+      : null;
 
-
-
-  // ===============================
+  // =====================================
   // Debt Risk
-  // ===============================
+  // =====================================
 
   let debtRisk = "Low";
 
+  const debt = Number(
+    latestBalance?.borrowings || 0
+  );
 
-  const latestBalance =
-    balanceSheet[
-      balanceSheet.length - 1
-    ];
-
-
-  if (
-    latestBalance &&
-    latestBalance.total_debt > 100000
-  ) {
-
+  if (debt > 100000) {
     debtRisk = "High";
-
-  }
-  else if (
-    latestBalance &&
-    latestBalance.total_debt > 50000
-  ) {
-
+  } else if (debt > 50000) {
     debtRisk = "Medium";
-
   }
 
-
-
-
-  // ===============================
+  // =====================================
   // Profit Stability
-  // ===============================
+  // =====================================
 
   let profitRisk = "Low";
 
+  if (sortedProfit.length > 1) {
+    const negativeYears = sortedProfit.filter(
+      (item) => Number(item.net_profit || 0) < 0
+    ).length;
 
-  if(profitLoss.length > 1){
-
-
-    const profits =
-      profitLoss.map(
-        item => item.net_profit
-      );
-
-
-    const negativeYears =
-      profits.filter(
-        p => p < 0
-      ).length;
-
-
-
-    if(negativeYears >= 2){
-
-      profitRisk="High";
-
+    if (negativeYears >= 2) {
+      profitRisk = "High";
+    } else if (negativeYears === 1) {
+      profitRisk = "Medium";
     }
-    else if(negativeYears===1){
-
-      profitRisk="Medium";
-
-    }
-
   }
 
-
-
-
-  // ===============================
+  // =====================================
   // Cash Flow Risk
-  // ===============================
+  // =====================================
 
+  let cashRisk = "Low";
 
-  let cashRisk="Low";
+  const netCashFlow = Number(
+    latestCashFlow?.net_cash_flow || 0
+  );
 
-
-  const latestCashFlow =
-    cashFlow[
-      cashFlow.length-1
-    ];
-
-
-  if(
-    latestCashFlow &&
-    latestCashFlow.free_cash_flow < 0
-  ){
-
-    cashRisk="High";
-
+  if (netCashFlow < 0) {
+    cashRisk = "High";
   }
 
-
-
-
-
-  // ===============================
+  // =====================================
   // Overall Risk
-  // ===============================
+  // =====================================
 
-
-  let riskGrade="LOW";
-
-
-  const risks=[
+  const risks = [
     debtRisk,
     profitRisk,
-    cashRisk
+    cashRisk,
   ];
 
+  const highRisk = risks.filter(
+    (r) => r === "High"
+  ).length;
 
-  const highRisk =
-    risks.filter(
-      r=>r==="High"
-    ).length;
+  const mediumRisk = risks.filter(
+    (r) => r === "Medium"
+  ).length;
 
+  let riskGrade = "LOW";
 
-
-  const mediumRisk =
-    risks.filter(
-      r=>r==="Medium"
-    ).length;
-
-
-
-  if(highRisk>=2){
-
-    riskGrade="HIGH";
-
+  if (highRisk >= 2) {
+    riskGrade = "HIGH";
+  } else if (
+    highRisk === 1 ||
+    mediumRisk >= 2
+  ) {
+    riskGrade = "MEDIUM";
   }
-  else if(
-    highRisk===1 ||
-    mediumRisk>=2
-  ){
-
-    riskGrade="MEDIUM";
-
-  }
-
-
-
-
 
   return (
-
     <div
       style={{
-        background:"#ffffff",
-        padding:"25px",
-        borderRadius:"15px",
-        marginTop:"30px",
+        background: "#ffffff",
+        padding: "25px",
+        borderRadius: "15px",
+        marginTop: "30px",
         boxShadow:
-        "0 8px 20px rgba(0,0,0,0.08)"
+          "0 8px 20px rgba(0,0,0,0.08)",
       }}
     >
-
-
       <h2
         style={{
-          color:"#dc2626"
+          color: "#dc2626",
         }}
       >
         ⚠️ Risk Analysis
       </h2>
 
-
-
       <div
         style={{
-          display:"grid",
+          display: "grid",
           gridTemplateColumns:
-          "repeat(auto-fit,minmax(220px,1fr))",
-          gap:"20px",
-          marginTop:"20px"
+            "repeat(auto-fit,minmax(220px,1fr))",
+          gap: "20px",
+          marginTop: "20px",
         }}
       >
-
-
         <RiskCard
           title="Debt Risk"
           value={debtRisk}
         />
-
 
         <RiskCard
           title="Profit Stability"
           value={profitRisk}
         />
 
-
         <RiskCard
           title="Cash Flow Risk"
           value={cashRisk}
         />
 
-
         <RiskCard
           title="Overall Risk"
           value={riskGrade}
         />
-
-
       </div>
-
-
     </div>
-
   );
-
 }
-
-
-
-
 
 function RiskCard({
   title,
-  value
-}){
+  value,
+}) {
+  let color = "#16a34a";
 
+  if (
+    value === "Medium" ||
+    value === "MEDIUM"
+  ) {
+    color = "#f59e0b";
+  }
 
-  let color="#16a34a";
+  if (
+    value === "High" ||
+    value === "HIGH"
+  ) {
+    color = "#dc2626";
+  }
 
-
-  if(value==="Medium")
-    color="#f59e0b";
-
-
-  if(
-    value==="High" ||
-    value==="HIGH"
-  )
-    color="#dc2626";
-
-
-
-  return(
-
+  return (
     <div
       style={{
-        background:"#f9fafb",
-        padding:"20px",
-        borderRadius:"12px",
-        borderLeft:
-        `6px solid ${color}`
+        background: "#f9fafb",
+        padding: "20px",
+        borderRadius: "12px",
+        borderLeft: `6px solid ${color}`,
       }}
     >
-
-
-      <h3>
+      <h3
+        style={{
+          marginBottom: "10px",
+          color: "#334155",
+        }}
+      >
         {title}
       </h3>
 
-
       <h2
         style={{
-          color:color
+          color: color,
+          margin: 0,
         }}
       >
         {value}
       </h2>
-
-
     </div>
-
   );
-
 }
-
 
 export default RiskAnalysis;

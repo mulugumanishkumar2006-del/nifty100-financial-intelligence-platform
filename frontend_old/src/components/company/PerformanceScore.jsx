@@ -1,87 +1,207 @@
-function calculateScore(company) {
-  let score = 0;
-
-  score += Number(company.roe_percentage || 0);
-
-  score += Number(company.roce_percentage || 0);
-
-  score += Number(company.book_value || 0) / 10;
-
-  if (score > 100) score = 100;
-
-  return Math.round(score);
-}
-
-function getRating(score) {
-  if (score >= 90)
-    return {
-      text: "Excellent",
-      color: "#16a34a",
-    };
-
-  if (score >= 75)
-    return {
-      text: "Good",
-      color: "#2563eb",
-    };
-
-  if (score >= 60)
-    return {
-      text: "Average",
-      color: "#f59e0b",
-    };
-
-  return {
-    text: "Weak",
-    color: "#dc2626",
-  };
-}
+import { useEffect, useState } from "react";
+import {
+  getRecommendation,
+  getHealthScore,
+  getAISummary,
+} from "../../services/companyService";
 
 function PerformanceScore({ company }) {
-  const score = calculateScore(company);
+  const [recommendation, setRecommendation] = useState(null);
+  const [health, setHealth] = useState(null);
+  const [summary, setSummary] = useState(null);
 
-  const rating = getRating(score);
+  useEffect(() => {
+    async function loadData() {
+      if (!company?.id) return;
+
+      try {
+        const [rec, score, ai] = await Promise.all([
+          getRecommendation(company.id),
+          getHealthScore(company.id),
+          getAISummary(company.id),
+        ]);
+
+        setRecommendation(rec);
+        setHealth(score);
+        setSummary(ai);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadData();
+  }, [company]);
+
+  if (!recommendation || !health || !summary) {
+    return (
+      <div
+        style={{
+          background: "#fff",
+          padding: "25px",
+          borderRadius: "15px",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+        }}
+      >
+        <h2>Performance Score</h2>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  const score = health.health_score || 0;
+
+  let recommendationColor = "#2563eb";
+
+  if (recommendation.recommendation === "BUY")
+    recommendationColor = "#16a34a";
+
+  if (recommendation.recommendation === "SELL")
+    recommendationColor = "#dc2626";
+
+  let scoreColor = "#16a34a";
+
+  if (score < 80) scoreColor = "#f59e0b";
+  if (score < 60) scoreColor = "#dc2626";
 
   return (
     <div
       style={{
-        background: "#fff",
-        padding: "20px",
-        borderRadius: "12px",
-        boxShadow: "0 5px 15px rgba(0,0,0,.08)",
+        background: "#ffffff",
+        padding: "25px",
+        borderRadius: "15px",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
       }}
     >
-      <h2>Performance Score</h2>
+      <h2
+        style={{
+          color: "#2563eb",
+          marginBottom: "20px",
+        }}
+      >
+        ⭐ Performance Score
+      </h2>
+
+      {/* Health Score */}
+
+      <div style={{ marginBottom: "25px" }}>
+        <h3>Health Score</h3>
+
+        <div
+          style={{
+            width: "100%",
+            height: "12px",
+            background: "#e5e7eb",
+            borderRadius: "10px",
+            overflow: "hidden",
+            marginTop: "10px",
+          }}
+        >
+          <div
+            style={{
+              width: `${score}%`,
+              height: "100%",
+              background: scoreColor,
+            }}
+          />
+        </div>
+
+        <h2
+          style={{
+            color: scoreColor,
+            marginTop: "10px",
+          }}
+        >
+          {score}/100
+        </h2>
+      </div>
+
+      {/* Recommendation */}
 
       <div
         style={{
-          fontSize: "50px",
-          fontWeight: "700",
-          color: rating.color,
+          marginBottom: "20px",
         }}
       >
-        {score}
+        <h3>Recommendation</h3>
+
+        <h1
+          style={{
+            color: recommendationColor,
+            margin: 0,
+          }}
+        >
+          {recommendation.recommendation}
+        </h1>
       </div>
+
+      {/* Grade */}
 
       <div
         style={{
-          fontSize: "20px",
-          color: rating.color,
-          fontWeight: "600",
+          marginBottom: "20px",
         }}
       >
-        {rating.text}
+        <h3>Grade</h3>
+
+        <h2
+          style={{
+            color: "#2563eb",
+          }}
+        >
+          {health.grade}
+        </h2>
       </div>
 
-      <progress
-        value={score}
-        max="100"
+      {/* Risk */}
+
+      <div
         style={{
-          width: "100%",
-          marginTop: "20px",
-          height: "15px",
+          marginBottom: "20px",
         }}
-      />
+      >
+        <h3>Risk Level</h3>
+
+        <h2
+          style={{
+            color:
+              summary.risk === "Low"
+                ? "#16a34a"
+                : summary.risk === "Medium"
+                ? "#f59e0b"
+                : "#dc2626",
+          }}
+        >
+          {summary.risk}
+        </h2>
+      </div>
+
+      {/* AI Summary */}
+
+      <div
+        style={{
+          marginTop: "25px",
+          background: "#f8fafc",
+          padding: "18px",
+          borderRadius: "10px",
+        }}
+      >
+        <h3
+          style={{
+            marginBottom: "10px",
+          }}
+        >
+          🤖 AI Summary
+        </h3>
+
+        <p
+          style={{
+            lineHeight: "1.7",
+            color: "#475569",
+          }}
+        >
+          {summary.summary}
+        </p>
+      </div>
     </div>
   );
 }

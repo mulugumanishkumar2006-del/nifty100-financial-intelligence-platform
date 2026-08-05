@@ -17,6 +17,48 @@ export const getDashboard = async () => {
 };
 
 // ======================================================
+// Latest Financial Year
+// ======================================================
+
+export const getLatestYear = async () => {
+  try {
+    const { data } = await axios.get(`${API}/latest-year`);
+    return data;
+  } catch (err) {
+    console.error("Latest Year Error:", err);
+    return {};
+  }
+};
+
+// ======================================================
+// Top Revenue Company
+// ======================================================
+
+export const getTopRevenue = async () => {
+  try {
+    const { data } = await axios.get(`${API}/top-revenue?limit=1`);
+    return data;
+  } catch (err) {
+    console.error("Top Revenue Error:", err);
+    return [];
+  }
+};
+
+// ======================================================
+// Top Profit Company
+// ======================================================
+
+export const getTopProfit = async () => {
+  try {
+    const { data } = await axios.get(`${API}/top-profit?limit=1`);
+    return data;
+  } catch (err) {
+    console.error("Top Profit Error:", err);
+    return [];
+  }
+};
+
+// ======================================================
 // Revenue Ranking
 // ======================================================
 

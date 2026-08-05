@@ -11,7 +11,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-
+from app.routers.comparison_router import router as comparison_router
 from app.routers import (
     company,
     analytics,
@@ -182,7 +182,10 @@ app.include_router(
     prefix="/api",
     tags=["Charts"],
 )
-
+app.include_router(
+    comparison_router,
+    prefix="/api"
+)
 
 # ==========================================================
 # Root Endpoint

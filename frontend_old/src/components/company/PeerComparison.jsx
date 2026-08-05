@@ -1,30 +1,66 @@
-function PeerComparison() {
-  const peers = [
-    {
-      company: "Reliance Industries",
-      marketCap: "₹18.5 L Cr",
-      roe: "9.8%",
-      roce: "10.5%",
-    },
-    {
-      company: "ONGC",
-      marketCap: "₹3.4 L Cr",
-      roe: "18.2%",
-      roce: "19.6%",
-    },
-    {
-      company: "IOC",
-      marketCap: "₹2.7 L Cr",
-      roe: "15.7%",
-      roce: "17.4%",
-    },
-    {
-      company: "BPCL",
-      marketCap: "₹1.4 L Cr",
-      roe: "21.4%",
-      roce: "24.8%",
-    },
-  ];
+import { useEffect, useState } from "react";
+import {
+  getCompaniesBySector,
+  getCompanyRatios,
+} from "../../services/companyService";
+
+function PeerComparison({ company }) {
+  const [peers, setPeers] = useState([]);
+
+  useEffect(() => {
+    async function loadPeers() {
+      if (!company?.id || !company?.broad_sector) return;
+
+      try {
+        // Get companies in same sector
+        const companies = await getCompaniesBySector(
+          company.broad_sector
+        );
+
+        const peerData = [];
+
+        for (const item of companies) {
+          const ratios = await getCompanyRatios(item.id);
+
+          peerData.push({
+            company: item.company_name,
+            roe:
+              ratios?.[0]?.return_on_equity_pct ?? "-",
+            assetTurnover:
+              ratios?.[0]?.asset_turnover ?? "-",
+            debt:
+              ratios?.[0]?.debt_to_equity ?? "-",
+            margin:
+              ratios?.[0]?.net_profit_margin_pct ?? "-",
+          });
+        }
+
+        setPeers(peerData);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadPeers();
+  }, [company]);
+
+  if (peers.length === 0) {
+    return (
+      <div
+        style={{
+          background: "#ffffff",
+          marginTop: "30px",
+          padding: "25px",
+          borderRadius: "15px",
+          boxShadow:
+            "0 8px 20px rgba(0,0,0,0.08)",
+        }}
+      >
+        <h2>👥 Peer Comparison</h2>
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -33,7 +69,8 @@ function PeerComparison() {
         marginTop: "30px",
         padding: "25px",
         borderRadius: "15px",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+        boxShadow:
+          "0 8px 20px rgba(0,0,0,0.08)",
       }}
     >
       <h2
@@ -45,47 +82,63 @@ function PeerComparison() {
         👥 Peer Comparison
       </h2>
 
-      <table
+      <div
         style={{
-          width: "100%",
-          borderCollapse: "collapse",
+          overflowX: "auto",
         }}
       >
-        <thead>
-          <tr
-            style={{
-              background: "#2563eb",
-              color: "white",
-            }}
-          >
-            <th style={{ padding: "12px" }}>Company</th>
-            <th>Market Cap</th>
-            <th>ROE</th>
-            <th>ROCE</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {peers.map((peer, index) => (
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+          }}
+        >
+          <thead>
             <tr
-              key={index}
               style={{
-                borderBottom: "1px solid #e5e7eb",
+                background: "#2563eb",
+                color: "#fff",
               }}
             >
-              <td style={{ padding: "12px" }}>
-                {peer.company}
-              </td>
+              <th style={{ padding: "12px" }}>
+                Company
+              </th>
 
-              <td>{peer.marketCap}</td>
+              <th>ROE %</th>
 
-              <td>{peer.roe}</td>
+              <th>Net Margin %</th>
 
-              <td>{peer.roce}</td>
+              <th>Debt/Equity</th>
+
+              <th>Asset Turnover</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {peers.map((peer, index) => (
+              <tr
+                key={index}
+                style={{
+                  borderBottom:
+                    "1px solid #e5e7eb",
+                }}
+              >
+                <td style={{ padding: "12px" }}>
+                  {peer.company}
+                </td>
+
+                <td>{peer.roe}</td>
+
+                <td>{peer.margin}</td>
+
+                <td>{peer.debt}</td>
+
+                <td>{peer.assetTurnover}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
