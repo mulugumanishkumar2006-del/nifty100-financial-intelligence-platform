@@ -4,11 +4,12 @@ import AIInsightsCard from "../components/AIInsightsCard";
 
 import {
   getCompanies,
-  getAIAnalysis,
-} from "../services/intelligenceService";
+  getHealthScore,
+  getRecommendation,
+  getAISummary,
+} from "../services/companyService";
 
 function Intelligence() {
-
   const [companies, setCompanies] = useState([]);
   const [companyId, setCompanyId] = useState("");
 
@@ -17,104 +18,104 @@ function Intelligence() {
   const [summary, setSummary] = useState(null);
 
   const [loading, setLoading] = useState(false);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
   const [error, setError] = useState("");
+
+  // ============================================
+  // Load Companies
+  // ============================================
 
   useEffect(() => {
     loadCompanies();
   }, []);
 
-  useEffect(() => {
-    if (companyId) {
-      loadAI();
-    }
-  }, [companyId]);
-
-  async function loadCompanies() {
-
+  const loadCompanies = async () => {
     try {
+      setLoadingCompanies(true);
 
       const data = await getCompanies();
 
-      setCompanies(data);
+      setCompanies(data || []);
 
-      if (data.length > 0) {
-
+      if (data?.length > 0) {
         setCompanyId(data[0].id);
-
       }
-
     } catch (err) {
-
       console.error(err);
-
       setError("Unable to load companies.");
-
+    } finally {
+      setLoadingCompanies(false);
     }
+  };
 
-  }
+  // ============================================
+  // Load AI Data
+  // ============================================
 
-  async function loadAI() {
+  useEffect(() => {
+    if (companyId) {
+      loadAIData();
+    }
+  }, [companyId]);
 
+  const loadAIData = async () => {
     try {
-
       setLoading(true);
-
       setError("");
 
-      const ai = await getAIAnalysis(companyId);
+      const [healthData, recommendationData, summaryData] =
+        await Promise.all([
+          getHealthScore(companyId),
+          getRecommendation(companyId),
+          getAISummary(companyId),
+        ]);
 
-      setHealth(ai.health);
-
-      setRecommendation(ai.recommendation);
-
-      setSummary(ai.summary);
-
+      setHealth(healthData);
+      setRecommendation(recommendationData);
+      setSummary(summaryData);
     } catch (err) {
-
       console.error(err);
-
       setError("Unable to load AI Intelligence.");
-
     } finally {
-
       setLoading(false);
-
     }
-
-  }
+  };
 
   return (
-
     <Layout>
+      {/* ===================================== */}
+      {/* Header */}
+      {/* ===================================== */}
 
-      <div
-        style={{
-          marginBottom: 35,
-        }}
-      >
-
+      <div style={{ marginBottom: 35 }}>
         <h1>🤖 AI Intelligence Dashboard</h1>
 
         <p
           style={{
             color: "#64748b",
+            marginTop: 8,
           }}
         >
-          AI Powered Financial Analysis Platform
+          AI-powered financial insights for every NIFTY100 company.
         </p>
-
       </div>
+
+      {/* ===================================== */}
+      {/* Company Selector */}
+      {/* ===================================== */}
 
       <div
         style={{
           marginBottom: 30,
+          display: "flex",
+          alignItems: "center",
+          gap: 15,
+          flexWrap: "wrap",
         }}
       >
-
         <label
           style={{
-            marginRight: 15,
-            fontWeight: "600",
+            fontWeight: 600,
           }}
         >
           Select Company
@@ -122,51 +123,56 @@ function Intelligence() {
 
         <select
           value={companyId}
-          onChange={(e) =>
-            setCompanyId(e.target.value)
-          }
+          disabled={loadingCompanies}
+          onChange={(e) => setCompanyId(e.target.value)}
           style={{
             padding: 12,
+            minWidth: 320,
             borderRadius: 10,
-            minWidth: 280,
           }}
         >
-
           {companies.map((company) => (
-
-            <option
-              key={company.id}
-              value={company.id}
-            >
-
+            <option key={company.id} value={company.id}>
               {company.company_name}
-
             </option>
-
           ))}
-
         </select>
-
       </div>
 
-      {loading && <h2>Loading AI Analysis...</h2>}
+      {/* ===================================== */}
+      {/* Loading */}
+      {/* ===================================== */}
 
-      {error &&
+      {loading && (
+        <h2 style={{ color: "#2563eb" }}>
+          Loading AI Analysis...
+        </h2>
+      )}
 
-        <h2
+      {/* ===================================== */}
+      {/* Error */}
+      {/* ===================================== */}
+
+      {error && (
+        <div
           style={{
-            color: "red",
+            padding: 18,
+            background: "#fee2e2",
+            color: "#dc2626",
+            borderRadius: 10,
+            marginBottom: 25,
           }}
         >
           {error}
-        </h2>
+        </div>
+      )}
 
-      }
+      {/* ===================================== */}
+      {/* Dashboard */}
+      {/* ===================================== */}
 
       {!loading && !error && (
-
         <>
-
           <div
             style={{
               display: "grid",
@@ -175,107 +181,109 @@ function Intelligence() {
               gap: 20,
             }}
           >
-
             <AIInsightsCard
               title="Health Score"
-              value={
-                health?.health_score ??
-                "-"
-              }
+              value={health?.health_score ?? "-"}
               color="#16a34a"
+            />
+
+            <AIInsightsCard
+              title="Investment Grade"
+              value={health?.grade ?? "-"}
+              color="#7c3aed"
             />
 
             <AIInsightsCard
               title="Recommendation"
               value={
                 recommendation?.recommendation ??
-                "-"
+                "HOLD"
               }
               color="#2563eb"
             />
 
             <AIInsightsCard
               title="Risk Level"
-              value={
-                summary?.risk ??
-                "-"
-              }
+              value={summary?.risk ?? "-"}
               color="#dc2626"
             />
-
           </div>
 
           <div
             style={{
-              marginTop: 25,
               display: "grid",
               gridTemplateColumns:
                 "repeat(auto-fit,minmax(250px,1fr))",
               gap: 20,
+              marginTop: 25,
             }}
           >
+            <AIInsightsCard
+              title="AI Confidence"
+              value="95%"
+              color="#0891b2"
+            />
 
             <AIInsightsCard
-              title="Investment Grade"
-              value={
-                health?.grade ??
-                "-"
-              }
-              color="#7c3aed"
+              title="Model Version"
+              value="FinGPT v2"
+              color="#f59e0b"
+            />
+
+            <AIInsightsCard
+              title="Analysis Status"
+              value="Completed"
+              color="#22c55e"
             />
 
             <AIInsightsCard
               title="Selected Company"
               value={
-                companyId
+                companies.find(
+                  (c) => c.id === companyId
+                )?.company_name ?? "-"
               }
-              color="#f59e0b"
+              color="#2563eb"
             />
-
-            <AIInsightsCard
-              title="AI Confidence"
-              value="95%"
-              color="#0ea5e9"
-            />
-
           </div>
+
+          {/* ===================================== */}
+          {/* AI Summary */}
+          {/* ===================================== */}
 
           <div
             style={{
               marginTop: 35,
               background: "#ffffff",
-              padding: 25,
               borderRadius: 15,
+              padding: 25,
               boxShadow:
                 "0 8px 20px rgba(0,0,0,0.08)",
             }}
           >
-
-            <h2>📈 AI Financial Summary</h2>
+            <h2
+              style={{
+                marginBottom: 20,
+              }}
+            >
+              📈 AI Financial Summary
+            </h2>
 
             <p
               style={{
-                marginTop: 20,
-                lineHeight: 1.8,
-                color: "#374151",
+                lineHeight: 1.9,
+                color: "#475569",
+                fontSize: 16,
               }}
             >
-
               {summary?.summary ??
-                "No summary available."}
-
+                "No AI summary available."}
             </p>
-
           </div>
-
         </>
-
       )}
-
     </Layout>
-
   );
-
 }
 
 export default Intelligence;

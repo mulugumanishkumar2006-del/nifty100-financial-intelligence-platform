@@ -20,31 +20,66 @@ import RevenueChart from "../components/company/RevenueChart";
 import ProfitChart from "../components/company/ProfitChart";
 
 import PeerComparison from "../components/company/PeerComparison";
-import AIInsights from "../components/company/AIInsights";
-import { getCompany } from "../services/companyService";
 import CompanyComparison from "../components/company/CompanyComparison";
+import AIInsights from "../components/company/AIInsights";
+
+import {
+  getCompany,
+  getAIInsights,
+  getGrowthAnalysis,
+  getRiskAnalysis,
+  getAIRecommendation,
+} from "../services/companyService";
+
 function CompanyDetails() {
   const { id } = useParams();
 
   const [company, setCompany] = useState(null);
+
+  const [aiInsights, setAIInsights] = useState(null);
+  const [growthAnalysis, setGrowthAnalysis] = useState(null);
+  const [riskAnalysis, setRiskAnalysis] = useState(null);
+  const [recommendation, setRecommendation] = useState(null);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchCompany() {
+    async function fetchCompanyData() {
       try {
-        const response = await getCompany(id);
+        const [
+          companyData,
+          aiData,
+          growthData,
+          riskData,
+          recommendationData,
+        ] = await Promise.all([
+          getCompany(id),
+          getAIInsights(id),
+          getGrowthAnalysis(id),
+          getRiskAnalysis(id),
+          getAIRecommendation(id),
+        ]);
 
-        console.log("Company Response:", response);
+        setCompany(companyData);
+        setAIInsights(aiData);
+        setGrowthAnalysis(growthData);
+        setRiskAnalysis(riskData);
+        setRecommendation(recommendationData);
 
-        setCompany(response);
+        console.log(companyData);
+        console.log(aiData);
+        console.log(growthData);
+        console.log(riskData);
+        console.log(recommendationData);
+
       } catch (error) {
-        console.error("Company Error:", error);
+        console.error("Company Details Error:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchCompany();
+    fetchCompanyData();
   }, [id]);
 
   if (loading) {
@@ -66,15 +101,15 @@ function CompanyDetails() {
   return (
     <Layout>
 
-      {/* ================= Header ================= */}
+      {/* ================= Company Header ================= */}
 
       <CompanyHeader company={company.company} />
 
-      {/* ================= Summary ================= */}
+      {/* ================= Company Summary ================= */}
 
       <CompanySummary company={company.company} />
 
-      {/* ================= AI Analysis ================= */}
+      {/* ================= AI Score Cards ================= */}
 
       <div
         style={{
@@ -86,12 +121,32 @@ function CompanyDetails() {
       >
         <HealthScore company={company.company} />
 
-        <PerformanceScore company={company.company} />
+        <PerformanceScore
+          company={company.company}
+          recommendation={recommendation}
+        />
       </div>
 
-      <GrowthAnalysis company={company} />
+      {/* ================= AI Insights ================= */}
 
-      <RiskAnalysis company={company} />
+      <AIInsights
+        company={company.company}
+        insights={aiInsights}
+      />
+
+      {/* ================= Growth Analysis ================= */}
+
+      <GrowthAnalysis
+        company={company}
+        analysis={growthAnalysis}
+      />
+
+      {/* ================= Risk Analysis ================= */}
+
+      <RiskAnalysis
+        company={company}
+        analysis={riskAnalysis}
+      />
 
       {/* ================= Charts ================= */}
 
@@ -126,11 +181,14 @@ function CompanyDetails() {
 
       <FinancialRatios
         company={company.company}
+        ratios={company.financial_ratios}
       />
-      <AIInsights company={company.company} />
+
+      {/* ================= Company Snapshot ================= */}
+
       <CompanyComparison
-    company={company.company}
-/>
+        company={company.company}
+      />
 
       {/* ================= Peer Comparison ================= */}
 

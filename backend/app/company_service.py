@@ -75,8 +75,17 @@ def get_company(company_id: str) -> Optional[Dict[str, Any]]:
         s.broad_sector,
         s.sub_sector,
         s.market_cap_category,
-        s.index_weight_pct
+        s.index_weight_pct,
+        c.chart_link,
+        c.nse_profile,
+        c.bse_profile,
+        c.isin,
 
+        (
+            SELECT MAX(year)
+            FROM profitandloss p
+            WHERE p.company_id = c.id
+        ) AS latest_financial_year
     FROM companies c
     LEFT JOIN sectors s ON c.id = s.company_id
     WHERE c.id = ?;
@@ -123,8 +132,13 @@ def get_company(company_id: str) -> Optional[Dict[str, Any]]:
 
     company_info = dataframe_to_records(company_df)[0]
 
+    latest_ratio = {}
+    if not ratio_df.empty:
+        latest_ratio = dataframe_to_records(ratio_df.tail(1))[0]
+
     return {
         "company": company_info,
+        "latest_ratio": latest_ratio,
         "profit_loss": dataframe_to_records(profit_loss_df),
         "balance_sheet": dataframe_to_records(balance_df),
         "cash_flow": dataframe_to_records(cashflow_df),
@@ -251,6 +265,41 @@ def get_peer_companies(company_id: str) -> List[Dict[str, Any]]:
     SELECT
         c.id,
         c.company_name,
+        c.market_cap,
+        c.book_value,
+        c.roe_percentage,
+        c.roce_percentage,
+
+        s.broad_sector,
+        s.sub_sector
+    FROM companies c
+    JOIN sectors s ON c.id = s.company_id
+    WHERE s.broad_sector = (
+        SELECT broad_sector
+        FROM sectors
+        WHERE company_id = ?
+    )
+    AND c.id <> ?
+    ORDER BY c.market_cap DESC;
+    """
+    with get_connection() as connection:
+        dataframe = pd.read_sql_query(query, connection, params=(company_id, company_id))
+
+    return dataframe_to_records(dataframe)
+
+
+# ==========================================================
+# Peer Comparison
+# ==========================================================
+
+def get_peer_comparison(company_id: str) -> List[Dict[str, Any]]:
+    query = """
+    SELECT
+        c.id,
+        c.company_name,
+        c.market_cap,
+        c.roe_percentage,
+        c.roce_percentage,
         s.broad_sector
     FROM companies c
     JOIN sectors s ON c.id = s.company_id
@@ -259,9 +308,14 @@ def get_peer_companies(company_id: str) -> List[Dict[str, Any]]:
         FROM sectors
         WHERE company_id = ?
     )
-    ORDER BY c.company_name;
+    ORDER BY c.market_cap DESC
+    LIMIT 10;
     """
     with get_connection() as connection:
-        dataframe = pd.read_sql_query(query, connection, params=(company_id,))
+        dataframe = pd.read_sql_query(
+            query,
+            connection,
+            params=(company_id,)
+        )
 
     return dataframe_to_records(dataframe)

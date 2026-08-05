@@ -7,7 +7,7 @@ import Analytics from "./pages/Analytics";
 import FinancialRatios from "./pages/FinancialRatios";
 import StockPrices from "./pages/StockPrices";
 import StockScreener from "./pages/StockScreener";
-import CompareCompanies from "./pages/CompareCompanies";
+import CompanyComparisonPage from "./pages/CompanyComparisonPage";
 import Intelligence from "./pages/Intelligence";
 import Portfolio from "./pages/Portfolio";
 
@@ -15,67 +15,78 @@ function App() {
   return (
     <Routes>
 
-      {/* Dashboard */}
+      {/* ================= Dashboard ================= */}
+
       <Route
         path="/"
         element={<Dashboard />}
       />
 
-      {/* Companies */}
+      {/* ================= Companies ================= */}
+
       <Route
         path="/companies"
         element={<Companies />}
       />
 
-      {/* Company Details */}
+      {/* ================= Company Details ================= */}
+
       <Route
         path="/company/:id"
         element={<CompanyDetails />}
       />
 
-      {/* Analytics */}
+      {/* ================= Analytics ================= */}
+
       <Route
         path="/analytics"
         element={<Analytics />}
       />
 
-      {/* Financial Ratios */}
+      {/* ================= Financial Ratios ================= */}
+
       <Route
         path="/financial-ratios"
         element={<FinancialRatios />}
       />
 
-      {/* Stock Prices */}
+      {/* ================= Stock Prices ================= */}
+
       <Route
         path="/stock-prices"
         element={<StockPrices />}
       />
 
-      {/* Stock Screener */}
+      {/* ================= Stock Screener ================= */}
+
       <Route
         path="/stock-screener"
         element={<StockScreener />}
       />
 
-      {/* Compare Companies */}
+      {/* ================= Company Comparison ================= */}
+
       <Route
-        path="/compare"
-        element={<CompareCompanies />}
+        path="/comparison"
+        element={<CompanyComparisonPage />}
       />
 
-      {/* AI Intelligence */}
+      {/* ================= AI Intelligence ================= */}
+
       <Route
         path="/intelligence"
         element={<Intelligence />}
       />
 
-      {/* Portfolio */}
+      {/* ================= Portfolio ================= */}
+
       <Route
         path="/portfolio"
         element={<Portfolio />}
       />
 
-      {/* 404 Redirect */}
+      {/* ================= 404 ================= */}
+
       <Route
         path="*"
         element={

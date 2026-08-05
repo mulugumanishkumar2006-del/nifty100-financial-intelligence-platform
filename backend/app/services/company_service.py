@@ -320,3 +320,126 @@ def get_company_details(company_id: str):
     connection.close()
 
     return company_data
+
+
+# ==========================================================
+# Compare Companies
+# ==========================================================
+
+def compare_companies(company1: str, company2: str):
+
+    connection = get_connection()
+
+    query = """
+    SELECT
+        id,
+        company_name,
+        face_value,
+        book_value,
+        roe_percentage,
+        roce_percentage
+    FROM companies
+    WHERE id IN (?, ?)
+    """
+
+    df = pd.read_sql_query(
+        query,
+        connection,
+        params=(company1, company2),
+    )
+
+    connection.close()
+
+    return dataframe_to_records(df)
+
+
+# ==========================================================
+# Get Peer Companies
+# ==========================================================
+
+def get_peer_companies(company_id: str):
+
+    connection = get_connection()
+
+    sector = pd.read_sql_query(
+        """
+        SELECT broad_sector
+        FROM sectors
+        WHERE company_id=?
+        """,
+        connection,
+        params=(company_id,),
+    )
+
+    if sector.empty:
+        connection.close()
+        return []
+
+    sector_name = sector.iloc[0]["broad_sector"]
+
+    peers = pd.read_sql_query(
+        """
+        SELECT
+            c.id,
+            c.company_name,
+            s.broad_sector
+        FROM companies c
+        JOIN sectors s
+        ON c.id = s.company_id
+        WHERE s.broad_sector = ?
+        """,
+        connection,
+        params=(sector_name,),
+    )
+
+    connection.close()
+
+    return dataframe_to_records(peers)
+
+
+# ==========================================================
+# Peer Comparison
+# ==========================================================
+
+def get_peer_comparison(company_id: str):
+
+    connection = get_connection()
+
+    sector = pd.read_sql_query(
+        """
+        SELECT broad_sector
+        FROM sectors
+        WHERE company_id=?
+        """,
+        connection,
+        params=(company_id,),
+    )
+
+    if sector.empty:
+        connection.close()
+        return []
+
+    sector_name = sector.iloc[0]["broad_sector"]
+
+    query = """
+    SELECT
+        c.company_name,
+        c.book_value,
+        c.roe_percentage,
+        c.roce_percentage
+    FROM companies c
+    JOIN sectors s
+    ON c.id = s.company_id
+    WHERE s.broad_sector = ?
+    ORDER BY c.company_name
+    """
+
+    df = pd.read_sql_query(
+        query,
+        connection,
+        params=(sector_name,),
+    )
+
+    connection.close()
+
+    return dataframe_to_records(df)

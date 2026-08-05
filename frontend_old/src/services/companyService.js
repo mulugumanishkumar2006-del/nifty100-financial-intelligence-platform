@@ -141,7 +141,7 @@ export const getLatestStockPrice = async (companyId) => {
 };
 
 // ======================================================
-// AI Intelligence
+// AI Intelligence (Existing)
 // ======================================================
 
 export const getHealthScore = async (companyId) => {
@@ -176,6 +176,58 @@ export const getAISummary = async (companyId) => {
     return data;
   } catch (err) {
     console.error("AI Summary Error:", err);
+    return null;
+  }
+};
+
+// ======================================================
+// Day 21 - AI Insights
+// ======================================================
+
+export const getAIInsights = async (companyId) => {
+  try {
+    const { data } = await axios.get(
+      `${API}/ai/company/${companyId}`
+    );
+    return data;
+  } catch (err) {
+    console.error("AI Insights Error:", err);
+    return null;
+  }
+};
+
+export const getGrowthAnalysis = async (companyId) => {
+  try {
+    const { data } = await axios.get(
+      `${API}/ai/growth/${companyId}`
+    );
+    return data;
+  } catch (err) {
+    console.error("Growth Analysis Error:", err);
+    return null;
+  }
+};
+
+export const getRiskAnalysis = async (companyId) => {
+  try {
+    const { data } = await axios.get(
+      `${API}/ai/risk/${companyId}`
+    );
+    return data;
+  } catch (err) {
+    console.error("Risk Analysis Error:", err);
+    return null;
+  }
+};
+
+export const getAIRecommendation = async (companyId) => {
+  try {
+    const { data } = await axios.get(
+      `${API}/ai/recommendation/${companyId}`
+    );
+    return data;
+  } catch (err) {
+    console.error("AI Recommendation Error:", err);
     return null;
   }
 };
@@ -240,6 +292,45 @@ export const getStockHistoryChart = async (companyId) => {
     return data;
   } catch (err) {
     console.error("Stock History Chart Error:", err);
+    return [];
+  }
+};
+
+// ======================================================
+// Peer Comparison
+// ======================================================
+
+export const getPeerComparison = async (companyId) => {
+  try {
+    const { data } = await axios.get(
+      `${API}/comparison/peer-comparison/${companyId}`
+    );
+    return data;
+  } catch (err) {
+    console.error("Peer Comparison Error:", err);
+    return [];
+  }
+};
+
+// ======================================================
+// Company Comparison
+// ======================================================
+
+export const compareCompanies = async (company1, company2) => {
+  try {
+    const { data } = await axios.get(
+      `${API}/comparison`,
+      {
+        params: {
+          company1,
+          company2,
+        },
+      }
+    );
+
+    return data;
+  } catch (err) {
+    console.error("Company Comparison Error:", err);
     return [];
   }
 };
