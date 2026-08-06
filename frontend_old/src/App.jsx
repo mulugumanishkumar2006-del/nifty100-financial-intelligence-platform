@@ -9,6 +9,7 @@ import StockPrices from "./pages/StockPrices";
 import StockScreener from "./pages/StockScreener";
 import CompanyComparisonPage from "./pages/CompanyComparisonPage";
 import Intelligence from "./pages/Intelligence";
+import AIInsights from "./pages/AIInsights";
 import Portfolio from "./pages/Portfolio";
 
 function App() {
@@ -76,6 +77,13 @@ function App() {
       <Route
         path="/intelligence"
         element={<Intelligence />}
+      />
+
+      {/* ================= AI Insights (Day 22) ================= */}
+
+      <Route
+        path="/ai-insights"
+        element={<AIInsights />}
       />
 
       {/* ================= Portfolio ================= */}

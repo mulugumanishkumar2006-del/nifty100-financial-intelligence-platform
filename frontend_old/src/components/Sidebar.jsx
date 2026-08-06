@@ -10,6 +10,7 @@ import {
   FaSearchDollar,
   FaBalanceScale,
   FaRobot,
+  FaBrain,
   FaBriefcase,
 } from "react-icons/fa";
 
@@ -23,18 +24,13 @@ function Sidebar() {
     marginBottom: "12px",
     borderRadius: "12px",
     textDecoration: "none",
-
     color: isActive ? "#ffffff" : "#cbd5e1",
-
     background: isActive
       ? "linear-gradient(135deg,#2563eb,#1d4ed8)"
       : "transparent",
-
     fontWeight: "600",
     fontSize: "15px",
-
     transition: "all .3s ease",
-
     boxShadow: isActive
       ? "0 8px 20px rgba(37,99,235,.35)"
       : "none",
@@ -91,6 +87,12 @@ function Sidebar() {
     },
 
     {
+      name: "AI Insights",
+      path: "/ai-insights",
+      icon: <FaBrain />,
+    },
+
+    {
       name: "Portfolio",
       path: "/portfolio",
       icon: <FaBriefcase />,
@@ -113,7 +115,7 @@ function Sidebar() {
       }}
     >
 
-      {/* ================= Logo ================= */}
+      {/* Logo */}
 
       <div
         style={{
@@ -144,7 +146,7 @@ function Sidebar() {
 
       </div>
 
-      {/* ================= Navigation ================= */}
+      {/* Navigation */}
 
       <nav>
 
@@ -155,18 +157,15 @@ function Sidebar() {
             to={item.path}
             style={menuStyle}
           >
-
             {item.icon}
-
             {item.name}
-
           </NavLink>
 
         ))}
 
       </nav>
 
-      {/* ================= Footer ================= */}
+      {/* Footer */}
 
       <div
         style={{

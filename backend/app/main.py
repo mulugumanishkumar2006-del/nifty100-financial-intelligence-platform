@@ -8,13 +8,16 @@ import json
 import traceback
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.utils import CustomJSONEncoder, clean_value
 
+# ==========================================================
 # Routers
+# ==========================================================
+
 from app.routers import (
     company,
     analytics,
@@ -27,6 +30,8 @@ from app.routers import (
 
 from app.routers.comparison_router import router as comparison_router
 from app.routers.company_insight_router import router as company_insight_router
+from app.routers.ai_insights_router import router as ai_router
+from app.routers.chat_router import router as chat_router
 
 # ==========================================================
 # Custom JSON Response
@@ -71,21 +76,20 @@ app.add_middleware(
 )
 
 # ==========================================================
-# Startup
+# Startup / Shutdown
 # ==========================================================
 
 @app.on_event("startup")
 async def startup():
-    print("✅ API Started")
+    print("✅ NIFTY100 Financial Intelligence API Started")
 
 
 @app.on_event("shutdown")
 async def shutdown():
     print("🛑 API Shutdown")
 
-
 # ==========================================================
-# Validation Error
+# Validation Error Handler
 # ==========================================================
 
 @app.exception_handler(RequestValidationError)
@@ -99,9 +103,8 @@ async def validation_handler(request: Request, exc: RequestValidationError):
         },
     )
 
-
 # ==========================================================
-# Global Error
+# Global Exception Handler
 # ==========================================================
 
 @app.exception_handler(Exception)
@@ -112,6 +115,8 @@ async def exception_handler(request: Request, exc: Exception):
         content={
             "error": str(exc),
             "type": exc.__class__.__name__,
+            "path": request.url.path,
+            "method": request.method,
             "traceback": traceback.format_exc(),
         },
     )
@@ -120,18 +125,74 @@ async def exception_handler(request: Request, exc: Exception):
 # Register Routers
 # ==========================================================
 
-app.include_router(company.router, prefix="/api")
-app.include_router(analytics.router, prefix="/api")
-app.include_router(financial_ratios.router, prefix="/api")
-app.include_router(sectors.router, prefix="/api")
-app.include_router(stock_prices.router, prefix="/api")
-app.include_router(intelligence.router, prefix="/api")
-app.include_router(charts.router, prefix="/api")
-app.include_router(comparison_router, prefix="/api")
-app.include_router(company_insight_router, prefix="/api")
+app.include_router(
+    company.router,
+    prefix="/api",
+    tags=["Companies"],
+)
+
+app.include_router(
+    analytics.router,
+    prefix="/api",
+    tags=["Analytics"],
+)
+
+app.include_router(
+    financial_ratios.router,
+    prefix="/api",
+    tags=["Financial Ratios"],
+)
+
+app.include_router(
+    sectors.router,
+    prefix="/api",
+    tags=["Sectors"],
+)
+
+app.include_router(
+    stock_prices.router,
+    prefix="/api",
+    tags=["Stock Prices"],
+)
+
+app.include_router(
+    intelligence.router,
+    prefix="/api",
+    tags=["AI Intelligence"],
+)
+
+app.include_router(
+    charts.router,
+    prefix="/api",
+    tags=["Charts"],
+)
+
+app.include_router(
+    comparison_router,
+    prefix="/api",
+    tags=["Company Comparison"],
+)
+
+app.include_router(
+    company_insight_router,
+    prefix="/api",
+    tags=["Company Insights"],
+)
+
+app.include_router(
+    ai_router,
+    prefix="/api",
+    tags=["AI Insights"],
+)
+
+app.include_router(
+    chat_router,
+    prefix="/api",
+    tags=["AI Chat"],
+)
 
 # ==========================================================
-# Home
+# Root Endpoint
 # ==========================================================
 
 @app.get("/")
@@ -141,15 +202,24 @@ def home():
         "status": "Running",
         "version": "1.0.0",
         "docs": "/docs",
+        "health": "/health",
     }
 
+# ==========================================================
+# Health Check
+# ==========================================================
 
 @app.get("/health")
 def health():
     return {
-        "status": "healthy"
+        "status": "healthy",
+        "api": "NIFTY100 Financial Intelligence API",
+        "version": "1.0.0",
     }
 
+# ==========================================================
+# API Information
+# ==========================================================
 
 @app.get("/api-info")
 def api_info():
@@ -157,4 +227,17 @@ def api_info():
         "backend": "FastAPI",
         "frontend": "React",
         "database": "SQLite",
+        "modules": [
+            "Dashboard",
+            "Companies",
+            "Financial Ratios",
+            "Stock Prices",
+            "Sector Analytics",
+            "Company Comparison",
+            "Company Insights",
+            "AI Intelligence",
+            "AI Insights",
+            "AI Chat",
+            "Charts",
+        ],
     }
