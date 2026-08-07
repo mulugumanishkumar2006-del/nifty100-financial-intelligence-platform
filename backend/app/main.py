@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 
 from app.utils import CustomJSONEncoder, clean_value
 
+
 # ==========================================================
 # Routers
 # ==========================================================
@@ -28,16 +29,34 @@ from app.routers import (
     charts,
 )
 
-from app.routers.comparison_router import router as comparison_router
-from app.routers.company_insight_router import router as company_insight_router
-from app.routers.ai_insights_router import router as ai_router
-from app.routers.chat_router import router as chat_router
+from app.routers.comparison_router import (
+    router as comparison_router,
+)
+
+from app.routers.company_insight_router import (
+    router as company_insight_router,
+)
+
+from app.routers.ai_insights_router import (
+    router as ai_router,
+)
+
+from app.routers.chat_router import (
+    router as chat_router,
+)
+
+# Day 23 - AI Stock Recommendations
+from app.routers.recommendation_router import (
+    router as recommendation_router,
+)
+
 
 # ==========================================================
 # Custom JSON Response
 # ==========================================================
 
 class APIJSONResponse(JSONResponse):
+
     def render(self, content):
         cleaned = clean_value(content)
 
@@ -50,7 +69,7 @@ class APIJSONResponse(JSONResponse):
 
 
 # ==========================================================
-# FastAPI App
+# FastAPI Application
 # ==========================================================
 
 app = FastAPI(
@@ -59,6 +78,7 @@ app = FastAPI(
     version="1.0.0",
     default_response_class=APIJSONResponse,
 )
+
 
 # ==========================================================
 # CORS
@@ -75,40 +95,57 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # ==========================================================
-# Startup / Shutdown
+# Startup
 # ==========================================================
 
 @app.on_event("startup")
 async def startup():
-    print("✅ NIFTY100 Financial Intelligence API Started")
+    print(
+        "✅ NIFTY100 Financial Intelligence API Started"
+    )
 
+
+# ==========================================================
+# Shutdown
+# ==========================================================
 
 @app.on_event("shutdown")
 async def shutdown():
     print("🛑 API Shutdown")
+
 
 # ==========================================================
 # Validation Error Handler
 # ==========================================================
 
 @app.exception_handler(RequestValidationError)
-async def validation_handler(request: Request, exc: RequestValidationError):
+async def validation_handler(
+    request: Request,
+    exc: RequestValidationError,
+):
 
     return APIJSONResponse(
         status_code=422,
         content={
             "error": "Validation Error",
             "details": exc.errors(),
+            "path": request.url.path,
+            "method": request.method,
         },
     )
+
 
 # ==========================================================
 # Global Exception Handler
 # ==========================================================
 
 @app.exception_handler(Exception)
-async def exception_handler(request: Request, exc: Exception):
+async def exception_handler(
+    request: Request,
+    exc: Exception,
+):
 
     return APIJSONResponse(
         status_code=500,
@@ -121,9 +158,14 @@ async def exception_handler(request: Request, exc: Exception):
         },
     )
 
+
 # ==========================================================
 # Register Routers
 # ==========================================================
+
+# ----------------------------------------------------------
+# Companies
+# ----------------------------------------------------------
 
 app.include_router(
     company.router,
@@ -131,11 +173,21 @@ app.include_router(
     tags=["Companies"],
 )
 
+
+# ----------------------------------------------------------
+# Analytics
+# ----------------------------------------------------------
+
 app.include_router(
     analytics.router,
     prefix="/api",
     tags=["Analytics"],
 )
+
+
+# ----------------------------------------------------------
+# Financial Ratios
+# ----------------------------------------------------------
 
 app.include_router(
     financial_ratios.router,
@@ -143,11 +195,21 @@ app.include_router(
     tags=["Financial Ratios"],
 )
 
+
+# ----------------------------------------------------------
+# Sectors
+# ----------------------------------------------------------
+
 app.include_router(
     sectors.router,
     prefix="/api",
     tags=["Sectors"],
 )
+
+
+# ----------------------------------------------------------
+# Stock Prices
+# ----------------------------------------------------------
 
 app.include_router(
     stock_prices.router,
@@ -155,11 +217,21 @@ app.include_router(
     tags=["Stock Prices"],
 )
 
+
+# ----------------------------------------------------------
+# AI Intelligence
+# ----------------------------------------------------------
+
 app.include_router(
     intelligence.router,
     prefix="/api",
     tags=["AI Intelligence"],
 )
+
+
+# ----------------------------------------------------------
+# Charts
+# ----------------------------------------------------------
 
 app.include_router(
     charts.router,
@@ -167,11 +239,21 @@ app.include_router(
     tags=["Charts"],
 )
 
+
+# ----------------------------------------------------------
+# Company Comparison
+# ----------------------------------------------------------
+
 app.include_router(
     comparison_router,
     prefix="/api",
     tags=["Company Comparison"],
 )
+
+
+# ----------------------------------------------------------
+# Company Insights
+# ----------------------------------------------------------
 
 app.include_router(
     company_insight_router,
@@ -179,11 +261,21 @@ app.include_router(
     tags=["Company Insights"],
 )
 
+
+# ----------------------------------------------------------
+# AI Insights
+# ----------------------------------------------------------
+
 app.include_router(
     ai_router,
     prefix="/api",
     tags=["AI Insights"],
 )
+
+
+# ----------------------------------------------------------
+# AI Chat
+# ----------------------------------------------------------
 
 app.include_router(
     chat_router,
@@ -191,12 +283,26 @@ app.include_router(
     tags=["AI Chat"],
 )
 
+
+# ----------------------------------------------------------
+# AI Stock Recommendations
+# Day 23
+# ----------------------------------------------------------
+
+app.include_router(
+    recommendation_router,
+    prefix="/api",
+    tags=["AI Stock Recommendations"],
+)
+
+
 # ==========================================================
 # Root Endpoint
 # ==========================================================
 
 @app.get("/")
 def home():
+
     return {
         "project": "NIFTY100 Financial Intelligence Platform",
         "status": "Running",
@@ -205,17 +311,20 @@ def home():
         "health": "/health",
     }
 
+
 # ==========================================================
 # Health Check
 # ==========================================================
 
 @app.get("/health")
 def health():
+
     return {
         "status": "healthy",
         "api": "NIFTY100 Financial Intelligence API",
         "version": "1.0.0",
     }
+
 
 # ==========================================================
 # API Information
@@ -223,10 +332,12 @@ def health():
 
 @app.get("/api-info")
 def api_info():
+
     return {
         "backend": "FastAPI",
         "frontend": "React",
         "database": "SQLite",
+
         "modules": [
             "Dashboard",
             "Companies",
@@ -238,6 +349,7 @@ def api_info():
             "AI Intelligence",
             "AI Insights",
             "AI Chat",
+            "AI Stock Recommendations",
             "Charts",
         ],
     }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   LineChart,
   Line,
@@ -9,15 +10,15 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { getRevenueTrend } from "../../services/companyService";
+import { getStockHistoryChart } from "../../services/companyService";
 
-function RevenueChart({ company }) {
+function StockHistoryChart({ company }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const loadRevenue = async () => {
+    const loadStockHistory = async () => {
       if (!company?.id) {
         setData([]);
         setLoading(false);
@@ -29,58 +30,54 @@ function RevenueChart({ company }) {
         setError("");
 
         console.log(
-          "📊 Loading revenue for company:",
+          "📈 Loading stock history for:",
           company.id
         );
 
-        const result = await getRevenueTrend(company.id);
+        const result = await getStockHistoryChart(company.id);
 
-        console.log("📊 Revenue API Response:", result);
+        console.log(
+          "📈 Stock History API Response:",
+          result
+        );
 
         if (Array.isArray(result)) {
           setData(result);
         } else {
           setData([]);
-          setError("Invalid revenue data received from API.");
+          setError(
+            "Invalid stock history data received from API."
+          );
         }
       } catch (err) {
-        console.error("Revenue Chart Error:", err);
+        console.error(
+          "Stock History Chart Error:",
+          err
+        );
+
         setData([]);
-        setError("Unable to load revenue data.");
+        setError(
+          "Unable to load stock history."
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    loadRevenue();
+    loadStockHistory();
   }, [company?.id]);
 
   // ======================================================
-  // No company selected
+  // No company
   // ======================================================
 
   if (!company?.id) {
     return (
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "25px",
-          borderRadius: "15px",
-          marginTop: "25px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2
-          style={{
-            marginBottom: "10px",
-            color: "#2563eb",
-          }}
-        >
-          📈 Revenue Trend
-        </h2>
+      <div className="chart-card">
+        <h2>📈 Stock Price History</h2>
 
-        <p style={{ color: "#6b7280" }}>
-          Select a company to view revenue history.
+        <p>
+          Select a company to view stock price history.
         </p>
       </div>
     );
@@ -92,22 +89,10 @@ function RevenueChart({ company }) {
 
   if (loading) {
     return (
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "25px",
-          borderRadius: "15px",
-          marginTop: "25px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2 style={{ color: "#2563eb" }}>
-          📈 Revenue Trend
-        </h2>
+      <div className="chart-card">
+        <h2>📈 Stock Price History</h2>
 
-        <p style={{ color: "#6b7280" }}>
-          Loading revenue data...
-        </p>
+        <p>Loading stock price history...</p>
       </div>
     );
   }
@@ -118,18 +103,8 @@ function RevenueChart({ company }) {
 
   if (error) {
     return (
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "25px",
-          borderRadius: "15px",
-          marginTop: "25px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2 style={{ color: "#2563eb" }}>
-          📈 Revenue Trend
-        </h2>
+      <div className="chart-card">
+        <h2>📈 Stock Price History</h2>
 
         <p style={{ color: "#dc2626" }}>
           {error}
@@ -144,21 +119,11 @@ function RevenueChart({ company }) {
 
   if (data.length === 0) {
     return (
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "25px",
-          borderRadius: "15px",
-          marginTop: "25px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2 style={{ color: "#2563eb" }}>
-          📈 Revenue Trend
-        </h2>
+      <div className="chart-card">
+        <h2>📈 Stock Price History</h2>
 
-        <p style={{ color: "#6b7280" }}>
-          No revenue data available for{" "}
+        <p>
+          No stock price data available for{" "}
           {company.company_name || company.name}.
         </p>
       </div>
@@ -171,12 +136,14 @@ function RevenueChart({ company }) {
 
   return (
     <div
+      className="chart-card"
       style={{
         background: "#ffffff",
         padding: "25px",
         borderRadius: "15px",
         marginTop: "25px",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+        boxShadow:
+          "0 8px 20px rgba(0,0,0,0.08)",
       }}
     >
       {/* Header */}
@@ -196,7 +163,7 @@ function RevenueChart({ company }) {
               color: "#2563eb",
             }}
           >
-            📈 Revenue Trend
+            📈 Stock Price History
           </h2>
 
           <p
@@ -206,9 +173,10 @@ function RevenueChart({ company }) {
               fontSize: "14px",
             }}
           >
-            Historical revenue performance of{" "}
+            Historical stock prices of{" "}
             <strong>
-              {company.company_name || company.name}
+              {company.company_name ||
+                company.name}
             </strong>
           </p>
         </div>
@@ -223,7 +191,7 @@ function RevenueChart({ company }) {
             fontWeight: "600",
           }}
         >
-          {data.length} Years
+          {data.length} Records
         </div>
       </div>
 
@@ -235,7 +203,10 @@ function RevenueChart({ company }) {
           height: "350px",
         }}
       >
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+        >
           <LineChart
             data={data}
             margin={{
@@ -251,9 +222,9 @@ function RevenueChart({ company }) {
             />
 
             <XAxis
-              dataKey="year"
+              dataKey="date"
               tick={{
-                fontSize: 12,
+                fontSize: 11,
                 fill: "#6b7280",
               }}
             />
@@ -264,43 +235,42 @@ function RevenueChart({ company }) {
                 fill: "#6b7280",
               }}
               tickFormatter={(value) =>
-                `₹${Number(value).toLocaleString()}`
+                `₹${value}`
               }
             />
 
             <Tooltip
               formatter={(value) => [
-                `₹${Number(value).toLocaleString()}`,
-                "Revenue",
+                `₹${Number(value).toFixed(2)}`,
+                "Close Price",
               ]}
               labelFormatter={(label) =>
-                `Year: ${label}`
+                `Date: ${label}`
               }
             />
 
             <Line
               type="monotone"
-              dataKey="revenue"
+              dataKey="close"
               stroke="#2563eb"
               strokeWidth={3}
-              dot={{
-                r: 4,
-              }}
+              dot={false}
               activeDot={{
-                r: 7,
+                r: 6,
               }}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Data information */}
+      {/* Footer */}
 
       <div
         style={{
           marginTop: "15px",
           paddingTop: "15px",
-          borderTop: "1px solid #e5e7eb",
+          borderTop:
+            "1px solid #e5e7eb",
           display: "flex",
           justifyContent: "space-between",
           color: "#6b7280",
@@ -312,11 +282,11 @@ function RevenueChart({ company }) {
         </span>
 
         <span>
-          Revenue values shown in ₹ crore
+          Closing price history
         </span>
       </div>
     </div>
   );
 }
 
-export default RevenueChart;
+export default StockHistoryChart;

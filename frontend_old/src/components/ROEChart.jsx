@@ -9,15 +9,15 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { getRevenueTrend } from "../../services/companyService";
+import { getROETrend } from "../../services/companyService";
 
-function RevenueChart({ company }) {
+function ROEChart({ company }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const loadRevenue = async () => {
+    const loadROE = async () => {
       if (!company?.id) {
         setData([]);
         setLoading(false);
@@ -28,59 +28,41 @@ function RevenueChart({ company }) {
         setLoading(true);
         setError("");
 
-        console.log(
-          "📊 Loading revenue for company:",
-          company.id
-        );
+        console.log("📊 Loading ROE for:", company.id);
 
-        const result = await getRevenueTrend(company.id);
+        const result = await getROETrend(company.id);
 
-        console.log("📊 Revenue API Response:", result);
+        console.log("📊 ROE API Response:", result);
 
         if (Array.isArray(result)) {
           setData(result);
         } else {
           setData([]);
-          setError("Invalid revenue data received from API.");
+          setError("Invalid ROE data received from API.");
         }
       } catch (err) {
-        console.error("Revenue Chart Error:", err);
+        console.error("ROE Chart Error:", err);
         setData([]);
-        setError("Unable to load revenue data.");
+        setError("Unable to load ROE data.");
       } finally {
         setLoading(false);
       }
     };
 
-    loadRevenue();
+    loadROE();
   }, [company?.id]);
 
   // ======================================================
-  // No company selected
+  // No company
   // ======================================================
 
   if (!company?.id) {
     return (
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "25px",
-          borderRadius: "15px",
-          marginTop: "25px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2
-          style={{
-            marginBottom: "10px",
-            color: "#2563eb",
-          }}
-        >
-          📈 Revenue Trend
-        </h2>
+      <div className="chart-card">
+        <h2>📊 ROE Trend</h2>
 
-        <p style={{ color: "#6b7280" }}>
-          Select a company to view revenue history.
+        <p>
+          Select a company to view ROE history.
         </p>
       </div>
     );
@@ -92,22 +74,10 @@ function RevenueChart({ company }) {
 
   if (loading) {
     return (
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "25px",
-          borderRadius: "15px",
-          marginTop: "25px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2 style={{ color: "#2563eb" }}>
-          📈 Revenue Trend
-        </h2>
+      <div className="chart-card">
+        <h2>📊 ROE Trend</h2>
 
-        <p style={{ color: "#6b7280" }}>
-          Loading revenue data...
-        </p>
+        <p>Loading ROE data...</p>
       </div>
     );
   }
@@ -118,18 +88,8 @@ function RevenueChart({ company }) {
 
   if (error) {
     return (
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "25px",
-          borderRadius: "15px",
-          marginTop: "25px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2 style={{ color: "#2563eb" }}>
-          📈 Revenue Trend
-        </h2>
+      <div className="chart-card">
+        <h2>📊 ROE Trend</h2>
 
         <p style={{ color: "#dc2626" }}>
           {error}
@@ -144,21 +104,11 @@ function RevenueChart({ company }) {
 
   if (data.length === 0) {
     return (
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "25px",
-          borderRadius: "15px",
-          marginTop: "25px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2 style={{ color: "#2563eb" }}>
-          📈 Revenue Trend
-        </h2>
+      <div className="chart-card">
+        <h2>📊 ROE Trend</h2>
 
-        <p style={{ color: "#6b7280" }}>
-          No revenue data available for{" "}
+        <p>
+          No ROE data available for{" "}
           {company.company_name || company.name}.
         </p>
       </div>
@@ -171,6 +121,7 @@ function RevenueChart({ company }) {
 
   return (
     <div
+      className="chart-card"
       style={{
         background: "#ffffff",
         padding: "25px",
@@ -196,7 +147,7 @@ function RevenueChart({ company }) {
               color: "#2563eb",
             }}
           >
-            📈 Revenue Trend
+            📊 ROE Trend
           </h2>
 
           <p
@@ -206,7 +157,7 @@ function RevenueChart({ company }) {
               fontSize: "14px",
             }}
           >
-            Historical revenue performance of{" "}
+            Return on Equity history of{" "}
             <strong>
               {company.company_name || company.name}
             </strong>
@@ -264,14 +215,14 @@ function RevenueChart({ company }) {
                 fill: "#6b7280",
               }}
               tickFormatter={(value) =>
-                `₹${Number(value).toLocaleString()}`
+                `${value}%`
               }
             />
 
             <Tooltip
               formatter={(value) => [
-                `₹${Number(value).toLocaleString()}`,
-                "Revenue",
+                `${Number(value).toFixed(2)}%`,
+                "ROE",
               ]}
               labelFormatter={(label) =>
                 `Year: ${label}`
@@ -280,8 +231,8 @@ function RevenueChart({ company }) {
 
             <Line
               type="monotone"
-              dataKey="revenue"
-              stroke="#2563eb"
+              dataKey="roe"
+              stroke="#16a34a"
               strokeWidth={3}
               dot={{
                 r: 4,
@@ -294,7 +245,7 @@ function RevenueChart({ company }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Data information */}
+      {/* Footer */}
 
       <div
         style={{
@@ -312,11 +263,11 @@ function RevenueChart({ company }) {
         </span>
 
         <span>
-          Revenue values shown in ₹ crore
+          ROE values shown as percentages
         </span>
       </div>
     </div>
   );
 }
 
-export default RevenueChart;
+export default ROEChart;

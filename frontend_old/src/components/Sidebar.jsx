@@ -12,9 +12,13 @@ import {
   FaRobot,
   FaBrain,
   FaBriefcase,
+  FaComments,
 } from "react-icons/fa";
 
 function Sidebar() {
+  // ==========================================================
+  // Navigation Item Style
+  // ==========================================================
 
   const menuStyle = ({ isActive }) => ({
     display: "flex",
@@ -24,24 +28,35 @@ function Sidebar() {
     marginBottom: "12px",
     borderRadius: "12px",
     textDecoration: "none",
-    color: isActive ? "#ffffff" : "#cbd5e1",
+
+    color: isActive
+      ? "#ffffff"
+      : "#cbd5e1",
+
     background: isActive
       ? "linear-gradient(135deg,#2563eb,#1d4ed8)"
       : "transparent",
+
     fontWeight: "600",
     fontSize: "15px",
+
     transition: "all .3s ease",
+
     boxShadow: isActive
       ? "0 8px 20px rgba(37,99,235,.35)"
       : "none",
   });
 
-  const navItems = [
+  // ==========================================================
+  // Navigation Items
+  // ==========================================================
 
+  const navItems = [
     {
       name: "Dashboard",
       path: "/",
       icon: <FaChartLine />,
+      end: true,
     },
 
     {
@@ -93,29 +108,45 @@ function Sidebar() {
     },
 
     {
+      name: "AI Assistant",
+      path: "/ai-chat",
+      icon: <FaComments />,
+    },
+
+    {
       name: "Portfolio",
       path: "/portfolio",
       icon: <FaBriefcase />,
     },
-
   ];
 
-  return (
+  // ==========================================================
+  // Render
+  // ==========================================================
 
+  return (
     <aside
       style={{
         width: "270px",
         minHeight: "100vh",
+
         background: "#0f172a",
         color: "#ffffff",
+
         padding: "25px",
+
         display: "flex",
         flexDirection: "column",
+
         boxSizing: "border-box",
+
+        position: "sticky",
+        top: 0,
       }}
     >
-
-      {/* Logo */}
+      {/* ======================================================
+          Logo
+      ====================================================== */}
 
       <div
         style={{
@@ -123,12 +154,12 @@ function Sidebar() {
           marginBottom: "40px",
         }}
       >
-
         <h2
           style={{
             margin: 0,
             color: "#60a5fa",
             fontSize: "26px",
+            fontWeight: "700",
           }}
         >
           📈 NIFTY100
@@ -138,47 +169,106 @@ function Sidebar() {
           style={{
             color: "#94a3b8",
             marginTop: "8px",
+            marginBottom: 0,
             fontSize: "13px",
+            lineHeight: "1.5",
           }}
         >
           Financial Intelligence Platform
         </p>
-
       </div>
 
-      {/* Navigation */}
+      {/* ======================================================
+          Navigation
+      ====================================================== */}
 
-      <nav>
-
+      <nav
+        style={{
+          flex: 1,
+        }}
+      >
         {navItems.map((item) => (
-
           <NavLink
             key={item.path}
             to={item.path}
+            end={item.end}
             style={menuStyle}
           >
-            {item.icon}
-            {item.name}
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "20px",
+                fontSize: "16px",
+              }}
+            >
+              {item.icon}
+            </span>
+
+            <span>{item.name}</span>
           </NavLink>
-
         ))}
-
       </nav>
 
-      {/* Footer */}
+      {/* ======================================================
+          AI Workflow Indicator
+      ====================================================== */}
 
       <div
         style={{
-          marginTop: "auto",
+          background:
+            "linear-gradient(135deg,#172554,#1e3a8a)",
+          borderRadius: "12px",
+          padding: "15px",
+          marginTop: "15px",
+          marginBottom: "20px",
+          border: "1px solid #1e40af",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "12px",
+            color: "#93c5fd",
+            fontWeight: "600",
+            marginBottom: "6px",
+          }}
+        >
+          🤖 AI WORKFLOW
+        </div>
+
+        <div
+          style={{
+            fontSize: "12px",
+            color: "#dbeafe",
+            lineHeight: "1.6",
+          }}
+        >
+          Analyze → Understand → Investigate → Ask AI
+        </div>
+      </div>
+
+      {/* ======================================================
+          Footer
+      ====================================================== */}
+
+      <div
+        style={{
           textAlign: "center",
           color: "#64748b",
           fontSize: "12px",
-          paddingTop: "30px",
+          paddingTop: "20px",
           borderTop: "1px solid #1e293b",
+          lineHeight: "1.6",
         }}
       >
-
-        <strong>NIFTY100 Platform</strong>
+        <strong
+          style={{
+            color: "#94a3b8",
+          }}
+        >
+          NIFTY100 Platform
+        </strong>
 
         <br />
 
@@ -187,11 +277,8 @@ function Sidebar() {
         <br />
 
         Bluestock FinTech Internship
-
       </div>
-
     </aside>
-
   );
 }
 

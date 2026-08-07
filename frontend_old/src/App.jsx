@@ -10,6 +10,7 @@ import StockScreener from "./pages/StockScreener";
 import CompanyComparisonPage from "./pages/CompanyComparisonPage";
 import Intelligence from "./pages/Intelligence";
 import AIInsights from "./pages/AIInsights";
+import AIChat from "./pages/AIChat";
 import Portfolio from "./pages/Portfolio";
 
 function App() {
@@ -79,11 +80,18 @@ function App() {
         element={<Intelligence />}
       />
 
-      {/* ================= AI Insights (Day 22) ================= */}
+      {/* ================= AI Insights ================= */}
 
       <Route
         path="/ai-insights"
         element={<AIInsights />}
+      />
+
+      {/* ================= AI Chat ================= */}
+
+      <Route
+        path="/ai-chat"
+        element={<AIChat />}
       />
 
       {/* ================= Portfolio ================= */}

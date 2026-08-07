@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import Layout from "../components/Layout";
 
@@ -33,6 +33,7 @@ import {
 
 function CompanyDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [company, setCompany] = useState(null);
 
@@ -42,10 +43,20 @@ function CompanyDetails() {
   const [recommendation, setRecommendation] = useState(null);
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // ==========================================================
+  // Fetch Company Data
+  // ==========================================================
 
   useEffect(() => {
+    let mounted = true;
+
     async function fetchCompanyData() {
       try {
+        setLoading(true);
+        setError("");
+
         const [
           companyData,
           aiData,
@@ -60,110 +71,370 @@ function CompanyDetails() {
           getAIRecommendation(id),
         ]);
 
+        if (!mounted) return;
+
         setCompany(companyData);
         setAIInsights(aiData);
         setGrowthAnalysis(growthData);
         setRiskAnalysis(riskData);
         setRecommendation(recommendationData);
 
-        console.log(companyData);
-        console.log(aiData);
-        console.log(growthData);
-        console.log(riskData);
-        console.log(recommendationData);
+        console.log("Company:", companyData);
+        console.log("AI Insights:", aiData);
+        console.log("Growth:", growthData);
+        console.log("Risk:", riskData);
+        console.log("Recommendation:", recommendationData);
+      } catch (err) {
+        console.error("Company Details Error:", err);
 
-      } catch (error) {
-        console.error("Company Details Error:", error);
+        if (mounted) {
+          setError(
+            err?.response?.data?.detail ||
+              err?.message ||
+              "Unable to load company details."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
 
     fetchCompanyData();
+
+    return () => {
+      mounted = false;
+    };
   }, [id]);
+
+  // ==========================================================
+  // Loading State
+  // ==========================================================
 
   if (loading) {
     return (
       <Layout>
-        <h2>Loading Company...</h2>
+        <div
+          style={{
+            minHeight: "60vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+            gap: "12px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "40px",
+            }}
+          >
+            📊
+          </div>
+
+          <h2
+            style={{
+              margin: 0,
+              color: "#334155",
+            }}
+          >
+            Loading Company...
+          </h2>
+
+          <p
+            style={{
+              color: "#64748b",
+            }}
+          >
+            Loading financial intelligence and AI analysis.
+          </p>
+        </div>
       </Layout>
     );
   }
+
+  // ==========================================================
+  // Error State
+  // ==========================================================
+
+  if (error) {
+    return (
+      <Layout>
+        <div
+          style={{
+            maxWidth: "700px",
+            margin: "80px auto",
+            padding: "30px",
+            background: "#ffffff",
+            borderRadius: "15px",
+            textAlign: "center",
+            boxShadow: "0 10px 25px rgba(0,0,0,.08)",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "45px",
+              marginBottom: "15px",
+            }}
+          >
+            ⚠️
+          </div>
+
+          <h2
+            style={{
+              color: "#dc2626",
+            }}
+          >
+            Unable to Load Company
+          </h2>
+
+          <p
+            style={{
+              color: "#64748b",
+              lineHeight: "1.6",
+            }}
+          >
+            {error}
+          </p>
+
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: "15px",
+              padding: "12px 22px",
+              border: "none",
+              borderRadius: "10px",
+              background: "#2563eb",
+              color: "#ffffff",
+              fontWeight: "600",
+              cursor: "pointer",
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      </Layout>
+    );
+  }
+
+  // ==========================================================
+  // Company Not Found
+  // ==========================================================
 
   if (!company) {
     return (
       <Layout>
-        <h2>Company Not Found</h2>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "80px 20px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "50px",
+            }}
+          >
+            🔍
+          </div>
+
+          <h2>Company Not Found</h2>
+
+          <p
+            style={{
+              color: "#64748b",
+            }}
+          >
+            The requested company could not be found.
+          </p>
+        </div>
       </Layout>
     );
   }
 
+  // ==========================================================
+  // Normalize Company Object
+  // ==========================================================
+
+  const companyData = company.company || company;
+
+  // ==========================================================
+  // Ask AI About Company
+  // ==========================================================
+
+  function handleAskAI() {
+    if (!companyData?.id) {
+      return;
+    }
+
+    navigate(
+      `/ai-chat?company=${encodeURIComponent(
+        companyData.id
+      )}&name=${encodeURIComponent(
+        companyData.company_name || "Company"
+      )}`
+    );
+  }
+
+  // ==========================================================
+  // Render
+  // ==========================================================
+
   return (
     <Layout>
+      {/* ======================================================
+          Company Header + AI Action
+      ====================================================== */}
 
-      {/* ================= Company Header ================= */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: "20px",
+          flexWrap: "wrap",
+          marginBottom: "25px",
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            minWidth: "280px",
+          }}
+        >
+          <CompanyHeader company={companyData} />
+        </div>
 
-      <CompanyHeader company={company.company} />
+        <button
+          onClick={handleAskAI}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
 
-      {/* ================= Company Summary ================= */}
+            padding: "13px 20px",
 
-      <CompanySummary company={company.company} />
+            border: "none",
+            borderRadius: "10px",
 
-      {/* ================= AI Score Cards ================= */}
+            background:
+              "linear-gradient(135deg,#2563eb,#1d4ed8)",
+
+            color: "#ffffff",
+
+            fontSize: "15px",
+            fontWeight: "600",
+
+            cursor: "pointer",
+
+            boxShadow:
+              "0 8px 20px rgba(37,99,235,.25)",
+
+            transition: "all .2s ease",
+
+            whiteSpace: "nowrap",
+          }}
+          onMouseEnter={(event) => {
+            event.currentTarget.style.transform =
+              "translateY(-2px)";
+            event.currentTarget.style.boxShadow =
+              "0 12px 25px rgba(37,99,235,.35)";
+          }}
+          onMouseLeave={(event) => {
+            event.currentTarget.style.transform =
+              "translateY(0)";
+            event.currentTarget.style.boxShadow =
+              "0 8px 20px rgba(37,99,235,.25)";
+          }}
+        >
+          🤖 Ask AI About This Company
+        </button>
+      </div>
+
+      {/* ======================================================
+          Company Summary
+      ====================================================== */}
+
+      <CompanySummary
+        company={companyData}
+      />
+
+      {/* ======================================================
+          AI Score Cards
+      ====================================================== */}
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(320px,1fr))",
           gap: "20px",
           marginTop: "30px",
         }}
       >
-        <HealthScore company={company.company} />
+        <HealthScore
+          company={companyData}
+        />
 
         <PerformanceScore
-          company={company.company}
+          company={companyData}
           recommendation={recommendation}
         />
       </div>
 
-      {/* ================= AI Insights ================= */}
+      {/* ======================================================
+          AI Insights
+      ====================================================== */}
 
       <AIInsights
-        company={company.company}
+        company={companyData}
         insights={aiInsights}
       />
 
-      {/* ================= Growth Analysis ================= */}
+      {/* ======================================================
+          Growth Analysis
+      ====================================================== */}
 
       <GrowthAnalysis
         company={company}
         analysis={growthAnalysis}
       />
 
-      {/* ================= Risk Analysis ================= */}
+      {/* ======================================================
+          Risk Analysis
+      ====================================================== */}
 
       <RiskAnalysis
         company={company}
         analysis={riskAnalysis}
       />
 
-      {/* ================= Charts ================= */}
+      {/* ======================================================
+          Financial Charts
+      ====================================================== */}
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(500px,1fr))",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(500px,1fr))",
           gap: "20px",
           marginTop: "30px",
         }}
       >
-        <RevenueChart company={company} />
+        <RevenueChart
+          company={company}
+        />
 
-        <ProfitChart company={company} />
+        <ProfitChart
+          company={company}
+        />
       </div>
 
-      {/* ================= Financial Statements ================= */}
+      {/* ======================================================
+          Financial Statements
+      ====================================================== */}
 
       <ProfitLossTable
         data={company.profit_loss || []}
@@ -177,25 +448,30 @@ function CompanyDetails() {
         data={company.cash_flow || []}
       />
 
-      {/* ================= Financial Ratios ================= */}
+      {/* ======================================================
+          Financial Ratios
+      ====================================================== */}
 
       <FinancialRatios
-        company={company.company}
-        ratios={company.financial_ratios}
+        company={companyData}
+        ratios={company.financial_ratios || []}
       />
 
-      {/* ================= Company Snapshot ================= */}
+      {/* ======================================================
+          Company Snapshot
+      ====================================================== */}
 
       <CompanyComparison
-        company={company.company}
+        company={companyData}
       />
 
-      {/* ================= Peer Comparison ================= */}
+      {/* ======================================================
+          Peer Comparison
+      ====================================================== */}
 
       <PeerComparison
-        company={company.company}
+        company={companyData}
       />
-
     </Layout>
   );
 }

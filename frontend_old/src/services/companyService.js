@@ -1,5 +1,9 @@
 import axios from "axios";
 
+// ======================================================
+// API Configuration
+// ======================================================
+
 const API = "http://127.0.0.1:8000/api";
 
 // ======================================================
@@ -18,7 +22,10 @@ export const getCompanies = async () => {
 
 export const getCompany = async (companyId) => {
   try {
-    const { data } = await axios.get(`${API}/companies/${companyId}`);
+    const { data } = await axios.get(
+      `${API}/companies/${encodeURIComponent(companyId)}`
+    );
+
     return data;
   } catch (err) {
     console.error("Company Error:", err);
@@ -33,8 +40,9 @@ export const getCompany = async (companyId) => {
 export const getCompanyRatios = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/financial-ratios/company/${companyId}`
+      `${API}/financial-ratios/company/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Financial Ratios Error:", err);
@@ -45,8 +53,14 @@ export const getCompanyRatios = async (companyId) => {
 export const getTopROE = async (limit = 10) => {
   try {
     const { data } = await axios.get(
-      `${API}/financial-ratios/top-roe?limit=${limit}`
+      `${API}/financial-ratios/top-roe`,
+      {
+        params: {
+          limit,
+        },
+      }
     );
+
     return data;
   } catch (err) {
     console.error("Top ROE Error:", err);
@@ -57,8 +71,14 @@ export const getTopROE = async (limit = 10) => {
 export const getTopAssetTurnover = async (limit = 10) => {
   try {
     const { data } = await axios.get(
-      `${API}/financial-ratios/top-asset-turnover?limit=${limit}`
+      `${API}/financial-ratios/top-asset-turnover`,
+      {
+        params: {
+          limit,
+        },
+      }
     );
+
     return data;
   } catch (err) {
     console.error("Asset Turnover Error:", err);
@@ -92,7 +112,10 @@ export const getSectorSummary = async () => {
 
 export const getCompaniesBySector = async (sector) => {
   try {
-    const { data } = await axios.get(`${API}/sectors/${sector}`);
+    const { data } = await axios.get(
+      `${API}/sectors/${encodeURIComponent(sector)}`
+    );
+
     return data;
   } catch (err) {
     console.error("Companies By Sector Error:", err);
@@ -107,8 +130,14 @@ export const getCompaniesBySector = async (sector) => {
 export const getLatestStockPrices = async (limit = 100) => {
   try {
     const { data } = await axios.get(
-      `${API}/stock-prices?limit=${limit}`
+      `${API}/stock-prices`,
+      {
+        params: {
+          limit,
+        },
+      }
     );
+
     return data;
   } catch (err) {
     console.error("Latest Stock Prices Error:", err);
@@ -119,8 +148,9 @@ export const getLatestStockPrices = async (limit = 100) => {
 export const getCompanyStockHistory = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/stock-prices/company/${companyId}`
+      `${API}/stock-prices/company/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Company Stock History Error:", err);
@@ -131,8 +161,9 @@ export const getCompanyStockHistory = async (companyId) => {
 export const getLatestStockPrice = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/stock-prices/latest/${companyId}`
+      `${API}/stock-prices/latest/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Latest Stock Price Error:", err);
@@ -141,14 +172,15 @@ export const getLatestStockPrice = async (companyId) => {
 };
 
 // ======================================================
-// AI Intelligence (Existing)
+// AI Intelligence
 // ======================================================
 
 export const getHealthScore = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/intelligence/health-score/${companyId}`
+      `${API}/intelligence/health-score/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Health Score Error:", err);
@@ -159,8 +191,9 @@ export const getHealthScore = async (companyId) => {
 export const getRecommendation = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/intelligence/recommendation/${companyId}`
+      `${API}/intelligence/recommendation/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Recommendation Error:", err);
@@ -171,8 +204,9 @@ export const getRecommendation = async (companyId) => {
 export const getAISummary = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/intelligence/summary/${companyId}`
+      `${API}/intelligence/summary/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("AI Summary Error:", err);
@@ -181,14 +215,15 @@ export const getAISummary = async (companyId) => {
 };
 
 // ======================================================
-// Day 21 - AI Insights
+// AI Insights
 // ======================================================
 
 export const getAIInsights = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/ai/company/${companyId}`
+      `${API}/ai/company/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("AI Insights Error:", err);
@@ -199,8 +234,9 @@ export const getAIInsights = async (companyId) => {
 export const getGrowthAnalysis = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/ai/growth/${companyId}`
+      `${API}/ai/growth/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Growth Analysis Error:", err);
@@ -211,8 +247,9 @@ export const getGrowthAnalysis = async (companyId) => {
 export const getRiskAnalysis = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/ai/risk/${companyId}`
+      `${API}/ai/risk/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Risk Analysis Error:", err);
@@ -223,8 +260,9 @@ export const getRiskAnalysis = async (companyId) => {
 export const getAIRecommendation = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/ai/recommendation/${companyId}`
+      `${API}/ai/recommendation/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("AI Recommendation Error:", err);
@@ -235,12 +273,15 @@ export const getAIRecommendation = async (companyId) => {
 // ======================================================
 // Charts
 // ======================================================
+// Kept for existing Day 23 compatibility.
+// No new chart functionality is being added.
 
 export const getRevenueTrend = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/charts/revenue/${companyId}`
+      `${API}/charts/revenue/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Revenue Trend Error:", err);
@@ -251,8 +292,9 @@ export const getRevenueTrend = async (companyId) => {
 export const getROETrend = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/charts/roe/${companyId}`
+      `${API}/charts/roe/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("ROE Trend Error:", err);
@@ -262,9 +304,7 @@ export const getROETrend = async (companyId) => {
 
 export const getMarketCapChart = async () => {
   try {
-    const { data } = await axios.get(
-      `${API}/charts/market-cap`
-    );
+    const { data } = await axios.get(`${API}/charts/market-cap`);
     return data;
   } catch (err) {
     console.error("Market Cap Error:", err);
@@ -277,6 +317,7 @@ export const getSectorDistributionChart = async () => {
     const { data } = await axios.get(
       `${API}/charts/sector-distribution`
     );
+
     return data;
   } catch (err) {
     console.error("Sector Distribution Chart Error:", err);
@@ -287,8 +328,9 @@ export const getSectorDistributionChart = async () => {
 export const getStockHistoryChart = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/charts/stock-history/${companyId}`
+      `${API}/charts/stock-history/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Stock History Chart Error:", err);
@@ -303,8 +345,9 @@ export const getStockHistoryChart = async (companyId) => {
 export const getPeerComparison = async (companyId) => {
   try {
     const { data } = await axios.get(
-      `${API}/comparison/peer-comparison/${companyId}`
+      `${API}/comparison/peer-comparison/${encodeURIComponent(companyId)}`
     );
+
     return data;
   } catch (err) {
     console.error("Peer Comparison Error:", err);

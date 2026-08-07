@@ -20,37 +20,27 @@ const COLORS = [
   "#0ea5e9",
 ];
 
-function MarketSharePieChart({ stocks = [] }) {
-  const data = stocks
-    .filter((stock) => stock && stock.volume != null)
-    .map((stock) => ({
-      name:
-        stock.company ||
-        stock.company_name ||
-        stock.name ||
-        "Unknown",
-      value: Number(stock.volume) || 0,
-    }))
-    .filter((item) => item.value > 0);
-
-  if (data.length === 0) {
+function SectorDistributionChart({ data = [] }) {
+  if (!data || data.length === 0) {
     return (
       <div
         style={{
           background: "#ffffff",
-          padding: "20px",
+          padding: "25px",
           borderRadius: "12px",
           boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
         }}
       >
-        <h3>🥧 Market Share</h3>
-
-        <p style={{ color: "#666" }}>
-          No trading-volume data available.
-        </p>
+        <h3>🏭 Sector Distribution</h3>
+        <p>No sector distribution data available.</p>
       </div>
     );
   }
+
+  const chartData = data.map((item) => ({
+    name: item.sector,
+    value: Number(item.company_count ?? item.count ?? 0),
+  }));
 
   return (
     <div
@@ -61,28 +51,39 @@ function MarketSharePieChart({ stocks = [] }) {
         boxShadow: "0 5px 15px rgba(0,0,0,0.08)",
       }}
     >
-      <h3>🥧 Market Share (Trading Volume)</h3>
+      <h3 style={{ marginBottom: "20px" }}>
+        🏭 NIFTY100 Sector Distribution
+      </h3>
 
       <ResponsiveContainer width="100%" height={400}>
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             dataKey="value"
             nameKey="name"
+            cx="50%"
+            cy="50%"
             outerRadius={140}
             innerRadius={70}
             paddingAngle={3}
-            label
+            label={({ name, percent }) =>
+              `${name} ${(percent * 100).toFixed(1)}%`
+            }
           >
-            {data.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell
-                key={`${entry.name}-${index}`}
+                key={`sector-${index}`}
                 fill={COLORS[index % COLORS.length]}
               />
             ))}
           </Pie>
 
-          <Tooltip />
+          <Tooltip
+            formatter={(value, name) => [
+              `${value} companies`,
+              name,
+            ]}
+          />
 
           <Legend />
         </PieChart>
@@ -91,4 +92,4 @@ function MarketSharePieChart({ stocks = [] }) {
   );
 }
 
-export default MarketSharePieChart;
+export default SectorDistributionChart;
